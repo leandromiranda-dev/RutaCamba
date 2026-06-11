@@ -1,8 +1,13 @@
 # requirements/fase2.txt — Jose + Leandro (Fase 2: Re-ID)
 # Acordad entre los dos si necesitan agregar algo
-deepface
-scikit-learn
-numpy
-matplotlib
+deepface>=0.0.79
+scikit-learn>=1.2.0
+numpy>=1.24.0
+matplotlib>=3.7.0
 pillow
 tqdm
+scipy>=1.10.0
+wandb>=0.15.0
+
+
+
