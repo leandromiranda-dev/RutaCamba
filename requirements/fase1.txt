@@ -1,0 +1,9 @@
+# requirements/fase1.txt — Diego (Fase 1: Datos y preprocesamiento)
+torch
+torchvision
+pillow
+boto3
+matplotlib
+scikit-learn
+numpy
+tqdm

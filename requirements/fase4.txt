@@ -1,0 +1,6 @@
+# requirements/fase4.txt — Jose (Fase 4: Traducción LLM)
+anthropic
+langdetect
+transformers
+torch
+sentencepiece

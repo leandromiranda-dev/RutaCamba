@@ -1,0 +1,39 @@
+# .gitignore — RutaCamba
+
+# ── Datos y modelos (NO se suben al repo) ───────────────────────────────────
+data/train/
+data/val/
+data/test/
+data/gallery/
+data/translations.json
+data/*.csv
+models/*.pt
+models/*.pth
+
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.env
+*.egg
+
+# ── Jupyter ─────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── WandB ───────────────────────────────────────────────────────────────────
+wandb/
+
+# ── Venv / dependencias ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Preview del zip (temporal) ──────────────────────────────────────────────
+zip_preview/

@@ -1,0 +1,2 @@
+# requirements/fase5.txt — Nicole (Fase 5: WandB)
+wandb

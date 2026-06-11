@@ -1,0 +1,8 @@
+# requirements/fase2.txt — Jose + Leandro (Fase 2: Re-ID)
+# Acordad entre los dos si necesitan agregar algo
+deepface
+scikit-learn
+numpy
+matplotlib
+pillow
+tqdm

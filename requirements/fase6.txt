@@ -1,0 +1,8 @@
+# requirements/fase6.txt — Nicole (Fase 6: Despliegue)
+fastapi
+uvicorn[standard]
+python-multipart
+gradio
+requests
+boto3
+python-dotenv

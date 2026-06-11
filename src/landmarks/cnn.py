@@ -1,13 +1,17 @@
-"""Modelos del proyecto RutaCamba.
+"""cnn.py — TuristCNN: CNN desde cero para clasificar 8 landmarks.
 
-- TuristCNN: CNN desde cero (B1). Diseño y justificación en docs/ARQUITECTURA_CNN.md.
-- build_transfer_model: backbone preentrenado para Transfer Learning (B2).
+Alejandro (Fase 3): este es tu archivo principal para B1.
+Diseño y justificaciones en docs/ARQUITECTURA_CNN.md.
+
+Tarea: completá count_parameters y export_torchscript si los necesitás,
+y documentá tus decisiones de arquitectura en
+docs/decisiones/fase3_decisiones_alejandro.md.
 """
 
 import torch
 import torch.nn as nn
 
-NUM_CLASSES = 8
+from src.config import NUM_CLASSES, DROPOUT
 
 
 def _conv_block(in_ch: int, out_ch: int) -> nn.Sequential:
@@ -25,9 +29,12 @@ class TuristCNN(nn.Module):
 
     4 bloques conv (32→64→128→256) + AdaptiveAvgPool + cabeza FC con dropout.
     ~430K parámetros.
+
+    Decisiones documentadas en: docs/decisiones/fase3_decisiones_alejandro.md
+    Diseño en papel:             docs/ARQUITECTURA_CNN.md
     """
 
-    def __init__(self, num_classes: int = NUM_CLASSES, dropout: float = 0.5):
+    def __init__(self, num_classes: int = NUM_CLASSES, dropout: float = DROPOUT):
         super().__init__()
         self.features = nn.Sequential(
             _conv_block(3, 32),    # → 32 x 112 x 112
@@ -49,22 +56,6 @@ class TuristCNN(nn.Module):
         x = self.features(x)
         x = self.pool(x)
         return self.classifier(x)
-
-
-def build_transfer_model(num_classes: int = NUM_CLASSES, freeze_backbone: bool = True) -> nn.Module:
-    """ResNet18 preentrenado en ImageNet con nueva FC (B2).
-
-    Fase 1: backbone congelado, solo entrena la FC.
-    Fase 2 (fine-tuning): descongelar últimas capas con model.layer4.requires_grad_(True).
-    """
-    from torchvision import models
-
-    model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
-    if freeze_backbone:
-        for param in model.parameters():
-            param.requires_grad = False
-    model.fc = nn.Linear(model.fc.in_features, num_classes)  # siempre entrenable
-    return model
 
 
 def count_parameters(model: nn.Module) -> dict:

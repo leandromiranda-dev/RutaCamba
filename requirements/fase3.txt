@@ -1,0 +1,8 @@
+# requirements/fase3.txt — Alejandro (Fase 3: CNN + Transfer Learning)
+torch
+torchvision
+wandb
+scikit-learn
+matplotlib
+numpy
+tqdm
