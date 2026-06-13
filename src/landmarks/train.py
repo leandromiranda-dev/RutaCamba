@@ -1,8 +1,6 @@
 """train.py — Loop de entrenamiento para CNN y Transfer Learning.
 
 Alejandro (Fase 3): este es tu archivo de entrenamiento.
-Adaptado de la versión original para importar desde los módulos correctos
-de la nueva estructura de carpetas.
 
 Uso:
     python -m src.landmarks.train --model cnn --epochs 30
@@ -10,18 +8,22 @@ Uso:
     python -m src.landmarks.train --model cnn --epochs 2 --limit-batches 5   # smoke test
 
 Loggea por época: train/val loss y accuracy, lr. Guarda el mejor checkpoint
-(menor val loss) en models/ y lo sube a WandB como artifact.
+(menor val loss) en models/ y al final exporta TorchScript con el nombre
+que exige el contrato (contratos.md):
+    models/cnn_scratch.pt        ← B1
+    models/transfer_learning.pt  ← B2
 
 Decisiones a documentar en: docs/decisiones/fase3_decisiones_alejandro.md
 """
 
 import argparse
+import platform
 from pathlib import Path
 
 import torch
 import torch.nn as nn
 
-from src.landmarks.cnn import TuristCNN, count_parameters
+from src.landmarks.cnn import TuristCNN, count_parameters, export_torchscript
 from src.landmarks.transfer import build_transfer_model
 from src.config import (
     BATCH_SIZE, LR, WEIGHT_DECAY, DROPOUT, MIN_EPOCHS, MODELS_DIR,
@@ -37,6 +39,17 @@ except (ImportError, NotImplementedError):
     _WANDB_READY = False
 
 MODELS_PATH = Path(MODELS_DIR)
+
+# Bug fix Windows: num_workers=2 causa conflictos en Windows con algunos
+# versiones de PyTorch. En Linux/Mac se puede usar >0 sin problema.
+# Decisión: detectar el SO en runtime y ajustar automáticamente.
+_NUM_WORKERS = 0 if platform.system() == "Windows" else 2
+
+# Nombres de archivo finales según contrato (contratos.md — no cambiar).
+_TORCHSCRIPT_NAMES = {
+    "cnn":      "cnn_scratch.pt",
+    "transfer": "transfer_learning.pt",
+}
 
 
 def get_dataloaders(batch_size: int):
@@ -60,14 +73,23 @@ def get_dataloaders(batch_size: int):
             norm,
         ])
         eval_tf = transforms.Compose([
-            transforms.Resize(RESIZE), transforms.CenterCrop(CROP),
-            transforms.ToTensor(), norm,
+            transforms.Resize(RESIZE),
+            transforms.CenterCrop(CROP),
+            transforms.ToTensor(),
+            norm,
         ])
         loaders = {}
         for split in ("train", "val", "test"):
-            ds = datasets.ImageFolder(f"data/{split}", train_tf if split == "train" else eval_tf)
-            loaders[split] = DataLoader(ds, batch_size=batch_size,
-                                        shuffle=(split == "train"), num_workers=2)
+            ds = datasets.ImageFolder(
+                f"data/{split}",
+                train_tf if split == "train" else eval_tf,
+            )
+            loaders[split] = DataLoader(
+                ds,
+                batch_size=batch_size,
+                shuffle=(split == "train"),
+                num_workers=_NUM_WORKERS,  # 0 en Windows, 2 en Linux/Mac
+            )
         return loaders["train"], loaders["val"], loaders["test"]
 
 
@@ -106,9 +128,15 @@ def main():
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = (TuristCNN(dropout=args.dropout) if args.model == "cnn"
-             else build_transfer_model()).to(device)
+    print(f"Dispositivo: {device} | SO: {platform.system()} | workers: {_NUM_WORKERS}")
+
+    model = (
+        TuristCNN(dropout=args.dropout)
+        if args.model == "cnn"
+        else build_transfer_model()
+    ).to(device)
     params = count_parameters(model)
+    print(f"Modelo: {args.model} | params: {params['trainable']:,} entrenables")
 
     # WandB logging (Nicole — Fase 5)
     if _WANDB_READY:
@@ -121,44 +149,84 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
-        lr=args.lr, weight_decay=args.weight_decay,
+        lr=args.lr,
+        weight_decay=args.weight_decay,
     )
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=3)
+    # ReduceLROnPlateau: divide lr por 2 si val_loss no mejora en 3 épocas.
+    # Decisión: patience=3 porque con 30 épocas mínimas, 3 épocas sin mejora
+    # es suficiente señal de estancamiento sin reaccionar a ruido puntual.
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, factor=0.5, patience=3
+    )
 
     MODELS_PATH.mkdir(exist_ok=True)
-    best_path = MODELS_PATH / f"best_{args.model}.pth"
+
+    # Checkpoint temporal (state_dict) — se sobreescribe cada vez que mejora val_loss.
+    # Al final se exporta como TorchScript con el nombre del contrato.
+    checkpoint_path = MODELS_PATH / f"_checkpoint_{args.model}.pth"
     best_val_loss = float("inf")
 
     for epoch in range(1, args.epochs + 1):
-        train_loss, train_acc = run_epoch(model, train_loader, criterion, device,
-                                          optimizer, args.limit_batches)
-        val_loss, val_acc = run_epoch(model, val_loader, criterion, device,
-                                      limit_batches=args.limit_batches)
+        train_loss, train_acc = run_epoch(
+            model, train_loader, criterion, device, optimizer, args.limit_batches
+        )
+        val_loss, val_acc = run_epoch(
+            model, val_loader, criterion, device, limit_batches=args.limit_batches
+        )
         scheduler.step(val_loss)
 
         metrics = {
-            "epoch": epoch,
-            "train/loss": train_loss, "train/acc": train_acc,
-            "val/loss": val_loss, "val/acc": val_acc,
-            "lr": optimizer.param_groups[0]["lr"],
+            "epoch":      epoch,
+            "train/loss": train_loss,
+            "train/acc":  train_acc,
+            "val/loss":   val_loss,
+            "val/acc":    val_acc,
+            "lr":         optimizer.param_groups[0]["lr"],
         }
         if _WANDB_READY:
             log_epoch(metrics, step=epoch)
 
-        print(f"[{epoch:02d}/{args.epochs}] train {train_loss:.4f}/{train_acc:.2%}"
-              f"  val {val_loss:.4f}/{val_acc:.2%}")
+        print(
+            f"[{epoch:02d}/{args.epochs}] "
+            f"train {train_loss:.4f}/{train_acc:.2%}  "
+            f"val {val_loss:.4f}/{val_acc:.2%}"
+        )
 
-        if val_loss < best_val_loss:  # mejor checkpoint = menor val loss (requisito)
+        # Guardar checkpoint solo cuando mejora val_loss (no la última época).
+        # Decisión: val_loss mide error en datos no vistos → proxy más honesto
+        # del rendimiento real que train_loss, que puede seguir bajando por overfitting.
+        if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save({"epoch": epoch, "model_state": model.state_dict(),
-                        "val_loss": val_loss, "val_acc": val_acc,
-                        "config": vars(args)}, best_path)
+            torch.save(
+                {
+                    "epoch":       epoch,
+                    "model_state": model.state_dict(),
+                    "val_loss":    val_loss,
+                    "val_acc":     val_acc,
+                    "config":      vars(args),
+                },
+                checkpoint_path,
+            )
+            print(f"  ↳ nuevo mejor checkpoint (val_loss={val_loss:.4f})")
 
-    # Mejor checkpoint como artifact en WandB (requisito Fase 5).
+    # ── Exportación TorchScript ───────────────────────────────────────────────
+    # Cargar el mejor checkpoint (no el modelo del último epoch).
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(checkpoint["model_state"])
+
+    # Nombre del archivo según contrato (contratos.md).
+    ts_name = _TORCHSCRIPT_NAMES[args.model]
+    ts_path = str(MODELS_PATH / ts_name)
+    export_torchscript(model, ts_path)
+    print(f"TorchScript exportado → {ts_path}")
+
+    # Subir artifact a WandB (Nicole — Fase 5).
     if _WANDB_READY:
-        log_model_artifact(str(best_path), f"best-{args.model}")
+        log_model_artifact(ts_path, f"best-{args.model}")
 
-    print(f"Mejor val loss: {best_val_loss:.4f} → {best_path}")
+    print(f"\nMejor val_loss: {best_val_loss:.4f}")
+    print(f"Checkpoint:     {checkpoint_path}")
+    print(f"TorchScript:    {ts_path}  ← este usa la API")
 
 
 if __name__ == "__main__":
