@@ -1,0 +1,22 @@
+{
+  "idx_to_class": {
+    "0": "Cambodromo",
+    "1": "CatedralMunicipal",
+    "2": "Cristo",
+    "3": "DunasArena",
+    "4": "ParqueUrbano",
+    "5": "Plaza24",
+    "6": "Tahuichi",
+    "7": "Ventura"
+  },
+  "class_to_idx": {
+    "Cambodromo": 0,
+    "CatedralMunicipal": 1,
+    "Cristo": 2,
+    "DunasArena": 3,
+    "ParqueUrbano": 4,
+    "Plaza24": 5,
+    "Tahuichi": 6,
+    "Ventura": 7
+  }
+}
