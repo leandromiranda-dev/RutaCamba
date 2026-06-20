@@ -2,7 +2,12 @@
 
 REGLA: este archivo lo leen todos pero solo lo edita el coordinador del proyecto.
 Si tu fase necesita una constante nueva, avisá al equipo ANTES de agregarla aquí.
+
+Los valores sensibles (credenciales, entity de WandB, clave del LLM) se leen
+desde variables de entorno. Crea un `.env` local (ver `.env.example`) y llamá
+a `load_dotenv()` en tu punto de entrada antes de importar este módulo.
 """
+import os
 
 # ── Clases de landmarks ───────────────────────────────────────────────────────
 LANDMARK_CLASSES = [
@@ -38,8 +43,8 @@ MIN_EPOCHS      = 30
 MODELS_DIR      = "models"
 
 # ── Experiment tracking (Nicole — Fase 5) ────────────────────────────────────
-WANDB_PROJECT   = "rutacamba"
-WANDB_ENTITY    = ""    # ponele tu usuario de WandB (Nicole lo configura)
+WANDB_PROJECT   = os.getenv("WANDB_PROJECT", "rutacamba")
+WANDB_ENTITY    = os.getenv("WANDB_ENTITY", "")
 
 # ── Traducción (Jose — Fase 4) ───────────────────────────────────────────────
 TRANSLATIONS_PATH    = "data/translations.json"
