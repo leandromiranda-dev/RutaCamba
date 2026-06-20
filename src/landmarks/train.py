@@ -18,10 +18,18 @@ Decisiones a documentar en: docs/decisiones/fase3_decisiones_alejandro.md
 
 import argparse
 import platform
+import sys
 from pathlib import Path
 
 import torch
 import torch.nn as nn
+
+# La consola de Windows usa cp1252 por default y los prints de este archivo
+# tienen flechas Unicode (↳, →, ←) — sin esto, torch.save()/print() del loop
+# crashea con UnicodeEncodeError apenas mejora el primer checkpoint.
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
 
 from src.landmarks.cnn import TuristCNN, count_parameters, export_torchscript
 from src.landmarks.transfer import build_transfer_model
@@ -53,7 +61,11 @@ _TORCHSCRIPT_NAMES = {
 
 
 def get_dataloaders(batch_size: int):
-    """Usa src.data si Diego ya lo implementó; si no, cae a ImageFolder en data/."""
+    """Usa src.data si Diego ya lo implementó; si no, cae a ImageFolder en data/.
+
+    Devuelve siempre 4 valores (train, val, test, class_names) para respetar
+    el contrato de src/data/dataloaders.py.
+    """
     try:
         from src.data import get_dataloaders as _real
         return _real(batch_size=batch_size)
@@ -90,7 +102,7 @@ def get_dataloaders(batch_size: int):
                 shuffle=(split == "train"),
                 num_workers=_NUM_WORKERS,  # 0 en Windows, 2 en Linux/Mac
             )
-        return loaders["train"], loaders["val"], loaders["test"]
+        return loaders["train"], loaders["val"], loaders["test"], loaders["train"].dataset.classes
 
 
 def run_epoch(model, loader, criterion, device, optimizer=None, limit_batches=0):
@@ -145,7 +157,7 @@ def main():
             config={**vars(args), **params},
         )
 
-    train_loader, val_loader, _ = get_dataloaders(args.batch_size)
+    train_loader, val_loader, *_ = get_dataloaders(args.batch_size)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
