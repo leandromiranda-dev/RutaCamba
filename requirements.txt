@@ -1,0 +1,25 @@
+# requirements.txt — consolidado de requirements/fase1.txt..fase6.txt
+# Generado para instalar todo el proyecto en un solo entorno virtual.
+# Si una fase necesita una versión nueva, actualizá también su requirements/faseX.txt.
+
+torch
+torchvision
+pillow
+boto3
+matplotlib>=3.7.0
+scikit-learn>=1.2.0
+numpy>=1.24.0
+tqdm
+scipy>=1.10.0
+deepface>=0.0.79
+wandb>=0.15.0
+anthropic
+langdetect
+transformers
+sentencepiece
+fastapi
+uvicorn[standard]
+python-multipart
+gradio
+requests
+python-dotenv

@@ -10,7 +10,7 @@ Uso:
 
 Salida: data/translations.json con estructura:
 {
-  "cristo_redentor": {
+  "Cristo": {
     "es": {"nombre": "...", "descripcion": "..."},
     "en": {"nombre": "...", "descripcion": "..."},
     "fr": {"nombre": "...", "descripcion": "..."},
@@ -33,78 +33,82 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 # ── Catálogo de los 8 landmarks (mismos IDs que config.LANDMARK_CLASSES) ─────
-# FUENTE: context.md + config.py — NO cambiar los keys sin coordinar con el equipo
+# FUENTE: data/class_mapping.json (clases reales del dataset recolectado) —
+# NO cambiar los keys sin coordinar con el equipo.
+# Actualizado 2026-06-19: el catálogo anterior describía 8 lugares planeados
+# que no son los que terminó recolectando Diego. Jose: revisá estas
+# descripciones (son de referencia general) antes de generar translations.json.
 LANDMARK_CATALOG = {
-    "cristo_redentor": {
+    "Cambodromo": {
+        "nombre": "Cambódromo de Santa Cruz de la Sierra",
+        "descripcion": (
+            "Recinto construido para los desfiles de comparsas del Carnaval "
+            "Cruceño, uno de los carnavales más importantes de Bolivia. Es un "
+            "espacio público amplio que también se usa para otros eventos "
+            "masivos de la ciudad fuera de la temporada de carnaval."
+        ),
+    },
+    "CatedralMunicipal": {
+        "nombre": "Catedral Basílica Menor San Lorenzo",
+        "descripcion": (
+            "Templo católico ubicado en la Plaza 24 de Septiembre, corazón "
+            "histórico de Santa Cruz de la Sierra. Es la catedral más "
+            "importante del departamento y uno de los edificios coloniales "
+            "más representativos de la ciudad."
+        ),
+    },
+    "Cristo": {
         "nombre": "Cristo Redentor de Santa Cruz",
         "descripcion": (
             "Estatua monumental del Cristo Redentor ubicada en la ciudad de "
-            "Santa Cruz de la Sierra, Bolivia. Es uno de los íconos más reconocidos "
-            "de la ciudad, situada en un punto elevado que ofrece vistas panorámicas "
-            "sobre la urbe y sus alrededores."
+            "Santa Cruz de la Sierra, Bolivia. Es uno de los íconos más "
+            "reconocidos de la ciudad, situada en un punto elevado que ofrece "
+            "vistas panorámicas sobre la urbe y sus alrededores."
         ),
     },
-    "fuerte_samaipata": {
-        "nombre": "El Fuerte de Samaipata",
-        "descripcion": (
-            "Sitio arqueológico precolombino declarado Patrimonio de la Humanidad "
-            "por la UNESCO. Ubicado en la provincia Florida del departamento de Santa "
-            "Cruz, fue construido por la cultura chané y posteriormente ocupado por los "
-            "incas. Destaca su enorme roca esculpida con relieves únicos en el mundo."
-        ),
-    },
-    "parque_el_arenal": {
-        "nombre": "Parque El Arenal",
-        "descripcion": (
-            "Parque histórico y emblemático ubicado en el centro de Santa Cruz de la "
-            "Sierra. Es un espacio de recreación rodeado de áreas verdes, lagunas "
-            "artificiales y monumentos que celebran la cultura e historia cruceña. "
-            "Punto de encuentro popular para locales y turistas."
-        ),
-    },
-    "jardin_botanico": {
-        "nombre": "Jardín Botánico de Santa Cruz",
-        "descripcion": (
-            "Reserva natural y jardín botánico que preserva la flora tropical del "
-            "oriente boliviano. Cuenta con senderos ecológicos, colecciones de plantas "
-            "nativas, mariposario y zonas de picnic. Es ideal para familias y amantes "
-            "de la naturaleza."
-        ),
-    },
-    "catedral_metropolitana": {
-        "nombre": "Catedral Metropolitana Basílica de San Lorenzo",
-        "descripcion": (
-            "Templo católico de estilo barroco mestizo ubicado en la Plaza 24 de "
-            "Septiembre, corazón histórico de Santa Cruz de la Sierra. Es la catedral "
-            "más importante del departamento y uno de los edificios coloniales más "
-            "representativos de Bolivia."
-        ),
-    },
-    "biocentro_guembe": {
-        "nombre": "Biocentro Güembé",
-        "descripcion": (
-            "Parque temático y ecoturístico a las afueras de Santa Cruz. Ofrece "
-            "piscinas con olas artificiales, mariposario, orquideario, senderos en "
-            "la naturaleza y actividades de aventura. Es el destino de entretenimiento "
-            "familiar más popular del departamento."
-        ),
-    },
-    "lomas_de_arena": {
+    "DunasArena": {
         "nombre": "Lomas de Arena",
         "descripcion": (
-            "Parque regional con dunas de arena y lagunas estacionales, ubicado al "
-            "sur de Santa Cruz de la Sierra. Es un ecosistema único de Bolivia, "
-            "donde el desierto y la laguna conviven en perfecta armonía. "
-            "Ideal para sandboarding y fotografía de naturaleza."
+            "Parque regional con dunas de arena y lagunas estacionales, "
+            "ubicado al sur de Santa Cruz de la Sierra. Es un ecosistema "
+            "único de Bolivia, donde el desierto y la laguna conviven en "
+            "perfecta armonía. Ideal para sandboarding y fotografía de "
+            "naturaleza."
         ),
     },
-    "manzana_uno": {
-        "nombre": "Manzana Uno",
+    "ParqueUrbano": {
+        "nombre": "Parque Urbano",
         "descripcion": (
-            "Centro cultural y comercial emblemático en el corazón de Santa Cruz. "
-            "Alberga museos, galerías de arte contemporáneo, tiendas de diseño, "
-            "restaurantes gourmet y espacios de coworking en un entorno arquitectónico "
-            "moderno que combina historia y vanguardia."
+            "Parque recreativo de gran extensión dentro de la ciudad de "
+            "Santa Cruz de la Sierra, con áreas verdes, senderos y espacios "
+            "de esparcimiento. Es un punto de encuentro popular para "
+            "actividades al aire libre de los vecinos de la ciudad."
+        ),
+    },
+    "Plaza24": {
+        "nombre": "Plaza 24 de Septiembre",
+        "descripcion": (
+            "Plaza principal y centro histórico de Santa Cruz de la Sierra. "
+            "Está rodeada de edificios coloniales, la Catedral y sedes de "
+            "gobierno, y es el punto de encuentro social más tradicional "
+            "de la ciudad."
+        ),
+    },
+    "Tahuichi": {
+        "nombre": "Estadio Ramón Tahuichi Aguilera",
+        "descripcion": (
+            "Estadio de fútbol principal de Santa Cruz de la Sierra, sede de "
+            "partidos profesionales y asociado a la célebre academia de "
+            "fútbol formativo \"Tahuichi\", que lleva el nombre del mismo "
+            "homenajeado."
+        ),
+    },
+    "Ventura": {
+        "nombre": "Ventura Mall",
+        "descripcion": (
+            "Centro comercial moderno de Santa Cruz de la Sierra, con tiendas, "
+            "restaurantes y espacios de entretenimiento. Es uno de los "
+            "destinos de compras y ocio más visitados de la ciudad."
         ),
     },
 }
