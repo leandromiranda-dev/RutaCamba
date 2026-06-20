@@ -34,22 +34,41 @@ class TuristCNN(nn.Module):
     Diseño en papel:             docs/ARQUITECTURA_CNN.md
     """
 
-    def __init__(self, num_classes: int = NUM_CLASSES, dropout: float = DROPOUT):
+    def __init__(
+        self,
+        num_blocks: int = 4,
+        num_classes: int = NUM_CLASSES,
+        dropout: float = DROPOUT
+    ):
         super().__init__()
-        self.features = nn.Sequential(
-            _conv_block(3, 32),    # → 32 x 112 x 112
-            _conv_block(32, 64),   # → 64 x 56 x 56
-            _conv_block(64, 128),  # → 128 x 28 x 28
-            _conv_block(128, 256), # → 256 x 14 x 14
-        )
-        self.pool = nn.AdaptiveAvgPool2d(1)  # → 256 x 1 x 1
+
+        if num_blocks not in [2, 3, 4]:
+            raise ValueError("num_blocks debe ser 2, 3 o 4")
+
+        self.num_blocks = num_blocks
+
+        filters = [32, 64, 128, 256][:num_blocks]
+
+        layers = []
+        in_ch = 3
+
+        for out_ch in filters:
+            layers.append(_conv_block(in_ch, out_ch))
+            in_ch = out_ch
+
+        self.features = nn.Sequential(*layers)
+
+        self.pool = nn.AdaptiveAvgPool2d(1)
+
+        fc_hidden = filters[-1] // 2
+
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(dropout),
-            nn.Linear(256, 128),
+            nn.Linear(filters[-1], fc_hidden),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout * 0.6),
-            nn.Linear(128, num_classes),
+            nn.Linear(fc_hidden, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -78,6 +97,8 @@ def export_torchscript(model: nn.Module, path: str) -> None:
 
 if __name__ == "__main__":
     # Smoke test sin datos: forward con un batch aleatorio.
-    model = TuristCNN()
-    out = model(torch.randn(2, 3, 224, 224))
-    print("TuristCNN  out:", tuple(out.shape), "params:", count_parameters(model))
+    for n in [2, 3, 4]:
+        model = TuristCNN(num_blocks=n)
+        out = model(torch.randn(2, 3, 224, 224))
+        p = count_parameters(model)
+        print(f"num_blocks={n}  out:{tuple(out.shape)}  params:{p['total']:,}")
