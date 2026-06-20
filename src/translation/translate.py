@@ -185,9 +185,9 @@ class TranslationService:
             "El usuario busca un lugar turístico. Su consulta puede estar en cualquier idioma. "
             f"Consulta: \"{query}\"\n\n"
             "Respondé SOLO con el nombre del lugar turístico en español. "
-            "Si es un lugar conocido de Santa Cruz (Cristo Redentor, Fuerte Samaipata, "
-            "Parque El Arenal, Jardín Botánico, Catedral Metropolitana, Biocentro Güembé, "
-            "Lomas de Arena, Manzana Uno), devolvé exactamente ese nombre. "
+            "Si es un lugar conocido de Santa Cruz (Cambódromo, Catedral Basílica San Lorenzo, "
+            "Cristo Redentor, Lomas de Arena, Parque Urbano, Plaza 24 de Septiembre, "
+            "Estadio Ramón Tahuichi Aguilera, Ventura Mall), devolvé exactamente ese nombre. "
             "Si no podés identificar el lugar, respondé: NO_MATCH"
         )
         try:

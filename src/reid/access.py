@@ -74,8 +74,11 @@ def verify_identity(declared_id: str, probe_image) -> dict:
 
     Returns:
         dict con las claves:
-          - ``access``        (bool)  — True solo si top-1 == declared_id y dist < umbral.
-          - ``distance``      (float) — distancia coseno del top-1.
+          - ``access``        (bool)           — True solo si top-1 == declared_id y dist < umbral.
+          - ``distance``      (float | None)   — distancia coseno del top-1, o None si no
+            se pudo calcular (galería vacía, sin rostro detectado, etc.). None y no
+            ``float("inf")`` porque Starlette serializa JSON con ``allow_nan=False``
+            y rechaza Infinity.
           - ``top1_identity`` (str)   — identidad más cercana en la galería.
           - ``topk``          (list)  — lista de (identidad, distancia) top-5.
           - ``error``         (str, opcional) — mensaje si algo falló.
@@ -85,7 +88,7 @@ def verify_identity(declared_id: str, probe_image) -> dict:
     if gallery is None:
         return {
             "access": False,
-            "distance": float("inf"),
+            "distance": None,
             "top1_identity": "",
             "topk": [],
             "error": (
@@ -103,7 +106,7 @@ def verify_identity(declared_id: str, probe_image) -> dict:
         )
         return {
             "access": False,
-            "distance": float("inf"),
+            "distance": None,
             "top1_identity": "",
             "topk": [],
             "error": (
@@ -121,7 +124,7 @@ def verify_identity(declared_id: str, probe_image) -> dict:
         logger.error(f"No se pudo importar embeddings.py de Leandro: {e}")
         return {
             "access": False,
-            "distance": float("inf"),
+            "distance": None,
             "top1_identity": "",
             "topk": [],
             "error": "Módulo de embeddings no disponible. Verificá la instalación de DeepFace.",
@@ -133,7 +136,7 @@ def verify_identity(declared_id: str, probe_image) -> dict:
         logger.warning("No se detectó ningún rostro en la imagen provista.")
         return {
             "access": False,
-            "distance": float("inf"),
+            "distance": None,
             "top1_identity": "",
             "topk": [],
             "error": (
@@ -149,7 +152,7 @@ def verify_identity(declared_id: str, probe_image) -> dict:
         logger.error(f"Error en rank_identities: {e}")
         return {
             "access": False,
-            "distance": float("inf"),
+            "distance": None,
             "top1_identity": "",
             "topk": [],
             "error": str(e),
@@ -158,7 +161,7 @@ def verify_identity(declared_id: str, probe_image) -> dict:
     if not ranked:
         return {
             "access": False,
-            "distance": float("inf"),
+            "distance": None,
             "top1_identity": "",
             "topk": [],
             "error": "No se obtuvo ningún resultado del ranking.",

@@ -1,6 +1,6 @@
 # requirements/fase4.txt — Jose (Fase 4: Traducción LLM)
 anthropic
 langdetect
-transformers
+transformers<5  # transformers 5.x eliminó la task "translation" del pipeline genérico que usa el fallback NLLB-200 (Decisión 006)
 torch
 sentencepiece

@@ -1,6 +1,7 @@
 # requirements/fase2.txt — Jose + Leandro (Fase 2: Re-ID)
 # Acordad entre los dos si necesitan agregar algo
 deepface>=0.0.79
+tf-keras  # requerido por retinaface/deepface con TensorFlow >=2.16 (Keras 3)
 scikit-learn>=1.2.0
 numpy>=1.24.0
 matplotlib>=3.7.0

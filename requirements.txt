@@ -12,10 +12,11 @@ numpy>=1.24.0
 tqdm
 scipy>=1.10.0
 deepface>=0.0.79
+tf-keras
 wandb>=0.15.0
 anthropic
 langdetect
-transformers
+transformers<5
 sentencepiece
 fastapi
 uvicorn[standard]
