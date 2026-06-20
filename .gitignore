@@ -7,6 +7,7 @@ data/test/
 data/gallery/
 data/translations.json
 data/*.csv
+!data/manifest.csv
 models/*.pt
 models/*.pth
 
