@@ -10,15 +10,19 @@ a `load_dotenv()` en tu punto de entrada antes de importar este módulo.
 import os
 
 # ── Clases de landmarks ───────────────────────────────────────────────────────
+# Actualizado 2026-06-19: reemplaza las 8 clases planeadas originalmente por las
+# 8 reales del dataset recolectado (ver data/class_mapping.json y manifest.csv).
+# Ver reporte.md para la justificación — el catálogo de traducciones de Jose
+# (scripts/generate_translations.py) todavía describe las clases viejas.
 LANDMARK_CLASSES = [
-    "cristo_redentor",         # 0
-    "fuerte_samaipata",        # 1
-    "parque_el_arenal",        # 2
-    "jardin_botanico",         # 3
-    "catedral_metropolitana",  # 4
-    "biocentro_guembe",        # 5
-    "lomas_de_arena",          # 6
-    "manzana_uno",             # 7
+    "Cambodromo",         # 0
+    "CatedralMunicipal",  # 1
+    "Cristo",             # 2
+    "DunasArena",         # 3
+    "ParqueUrbano",       # 4
+    "Plaza24",            # 5
+    "Tahuichi",           # 6
+    "Ventura",            # 7
 ]
 NUM_CLASSES = len(LANDMARK_CLASSES)  # 8
 
