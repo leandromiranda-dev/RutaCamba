@@ -1,0 +1,38 @@
+{
+  "B1 (CNN scratch)": {
+    "test_accuracy": 0.9076,
+    "precision_macro": 0.9212,
+    "recall_macro": 0.8889,
+    "f1_macro": 0.8987,
+    "params": 422824,
+    "size_mb": 1.75,
+    "train_seconds": 3154.91549
+  },
+  "B2 (ResNet TL)": {
+    "test_accuracy": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "params": 11180616,
+    "size_mb": 44.85,
+    "train_seconds": 922
+  },
+  "B3 (SE-CNN)": {
+    "test_accuracy": 0.9244,
+    "precision_macro": 0.9136,
+    "recall_macro": 0.9132,
+    "f1_macro": 0.9124,
+    "params": 444584,
+    "size_mb": 1.86,
+    "train_seconds": 1684.6266019
+  },
+  "BA (ResNet-lite)": {
+    "test_accuracy": 0.8739,
+    "precision_macro": 0.8649,
+    "recall_macro": 0.8455,
+    "f1_macro": 0.8535,
+    "params": 1266632,
+    "size_mb": 5.15,
+    "train_seconds": 2924.6057357
+  }
+}

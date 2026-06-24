@@ -1,6 +1,9 @@
 # .gitignore — RutaCamba
 
-# ── Datos y modelos (NO se suben al repo) ───────────────────────────────────
+# ── Datos y modelos (NO se suben al repo — se publican recién al final) ──────
+# Las imágenes de entrenamiento (data/train|val|test) y los pesos entrenados
+# (models/*.pt, *.pth) quedan FUERA del repo a propósito. El dataset vive en
+# Google Drive y los modelos se suben como artifacts de WandB / al cierre.
 data/train/
 data/val/
 data/test/
@@ -11,6 +14,7 @@ data/*.csv
 !data/manifest.csv
 models/*.pt
 models/*.pth
+models/*.log
 
 # ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/

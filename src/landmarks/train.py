@@ -31,8 +31,11 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
 
-from src.landmarks.cnn import TuristCNN, count_parameters, export_torchscript
-from src.landmarks.transfer import build_transfer_model
+from src.landmarks.cnn import (
+    TuristCNN, TuristSECNN, TuristResNet,
+    count_parameters, export_torchscript,
+)
+from src.landmarks.transfer import build_transfer_model, unfreeze_layer4
 from src.config import (
     BATCH_SIZE, LR, WEIGHT_DECAY, DROPOUT, MIN_EPOCHS, MODELS_DIR,
     WANDB_PROJECT,
@@ -53,10 +56,13 @@ MODELS_PATH = Path(MODELS_DIR)
 # Decisión: detectar el SO en runtime y ajustar automáticamente.
 _NUM_WORKERS = 0 if platform.system() == "Windows" else 2
 
-# Nombres de archivo finales según contrato (contratos.md — no cambiar).
+# Nombres de archivo finales según contrato (contratos.md).
+# cnn/transfer son los del contrato original; se_cnn/resnet_lite son extensiones experimentales.
 _TORCHSCRIPT_NAMES = {
-    "cnn":      "cnn_scratch.pt",
-    "transfer": "transfer_learning.pt",
+    "cnn":          "cnn_scratch.pt",
+    "transfer":     "transfer_learning.pt",
+    "se_cnn":       "se_cnn_scratch.pt",
+    "resnet_lite":  "resnet_lite_scratch.pt",
 }
 
 
@@ -129,7 +135,11 @@ def run_epoch(model, loader, criterion, device, optimizer=None, limit_batches=0)
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", choices=["cnn", "transfer"], default="cnn")
+    parser.add_argument(
+        "--model",
+        choices=["cnn", "transfer", "se_cnn", "resnet_lite"],
+        default="cnn",
+    )
     parser.add_argument("--epochs", type=int, default=MIN_EPOCHS)
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     parser.add_argument("--lr", type=float, default=LR)
@@ -137,16 +147,43 @@ def main():
     parser.add_argument("--dropout", type=float, default=DROPOUT)
     parser.add_argument("--limit-batches", type=int, default=0, help="solo smoke test")
     parser.add_argument("--wandb-project", default=WANDB_PROJECT)
+    # ── Fine-tuning de dos fases (solo --model transfer) ──────────────────────
+    # Sin este flag, transfer entrena SOLO la FC con el backbone congelado, y
+    # difícilmente supere a la CNN desde cero. Con el flag se hace lo que pide
+    # el plan: fase (a) backbone congelado + FC (lr de --lr, default 1e-3), y
+    # fase (b) se descongela layer4 y se afina con --finetune-lr (default 1e-4).
+    parser.add_argument(
+        "--finetune-layer4", action="store_true",
+        help="transfer: tras --freeze-epochs, descongela layer4 y afina (fase b).",
+    )
+    parser.add_argument(
+        "--freeze-epochs", type=int, default=None,
+        help="épocas con backbone congelado antes de descongelar layer4 "
+             "(default: la mitad de --epochs).",
+    )
+    parser.add_argument(
+        "--finetune-lr", type=float, default=1e-4,
+        help="lr para la fase (b) de fine-tuning de layer4 (default 1e-4).",
+    )
     args = parser.parse_args()
+
+    # Cuántas épocas con el backbone congelado antes de afinar layer4.
+    freeze_epochs = (
+        args.freeze_epochs if args.freeze_epochs is not None else args.epochs // 2
+    )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Dispositivo: {device} | SO: {platform.system()} | workers: {_NUM_WORKERS}")
 
-    model = (
-        TuristCNN(dropout=args.dropout)
-        if args.model == "cnn"
-        else build_transfer_model()
-    ).to(device)
+    if args.model == "cnn":
+        model = TuristCNN(dropout=args.dropout)
+    elif args.model == "transfer":
+        model = build_transfer_model()
+    elif args.model == "se_cnn":
+        model = TuristSECNN(dropout=args.dropout)
+    else:  # resnet_lite
+        model = TuristResNet(dropout=args.dropout)
+    model = model.to(device)
     params = count_parameters(model)
     print(f"Modelo: {args.model} | params: {params['trainable']:,} entrenables")
 
@@ -179,6 +216,21 @@ def main():
     best_val_loss = float("inf")
 
     for epoch in range(1, args.epochs + 1):
+        # ── Fase (b): descongelar layer4 y afinar con lr reducido ─────────────
+        # Se hace UNA vez, al llegar a freeze_epochs+1. unfreeze_layer4 devuelve
+        # un optimizer nuevo (layer4 + FC, lr=--finetune-lr); recreamos también
+        # el scheduler para que opere sobre ese optimizer.
+        if (
+            args.model == "transfer"
+            and args.finetune_layer4
+            and epoch == freeze_epochs + 1
+        ):
+            print(f"\n→ Fase (b): descongelando layer4 (lr={args.finetune_lr})")
+            optimizer = unfreeze_layer4(model, lr=args.finetune_lr)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer, factor=0.5, patience=3
+            )
+
         train_loss, train_acc = run_epoch(
             model, train_loader, criterion, device, optimizer, args.limit_batches
         )
