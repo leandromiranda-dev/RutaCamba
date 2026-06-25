@@ -11,8 +11,7 @@ scikit-learn>=1.2.0
 numpy>=1.24.0
 tqdm
 scipy>=1.10.0
-deepface>=0.0.79
-tf-keras
+facenet-pytorch          # Re-ID facial: MTCNN + InceptionResnetV1 (VGGFace2, 512-d)
 wandb>=0.15.0
 openai
 langdetect
@@ -21,6 +20,5 @@ sentencepiece
 fastapi
 uvicorn[standard]
 python-multipart
-gradio
 requests
 python-dotenv

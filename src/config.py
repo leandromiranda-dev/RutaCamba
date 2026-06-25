@@ -35,7 +35,7 @@ IMAGENET_STD  = [0.229, 0.224, 0.225]
 # ── Re-ID (Jose + Leandro — Fase 2) ─────────────────────────────────────────
 REID_MODEL      = "ArcFace"       # modelo de DeepFace
 REID_DISTANCE   = "cosine"        # métrica de distancia
-REID_THRESHOLD  = 0.65            # ⚠ punto de partida — Leandro/Jose lo ajustan con ROC/EER
+REID_THRESHOLD  = 0.40           # ⚠ punto de partida — Leandro/Jose lo ajustan con ROC/EER
 GALLERY_DIR     = "data/gallery"  # carpeta con subcarpetas por identidad
 
 # ── Entrenamiento (Alejandro — Fase 3) ───────────────────────────────────────

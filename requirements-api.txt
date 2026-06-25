@@ -1,0 +1,25 @@
+# requirements-api.txt — dependencias de RUNTIME del backend (api/main.py).
+# Subconjunto de requirements.txt: lo mínimo para correr la API (sin el stack
+# de entrenamiento: wandb, boto3, matplotlib, scikit-learn, tqdm).
+#
+# OJO si ya tenés torch con CUDA instalado (no querés perder la build +cuXXX):
+#   instalá facenet-pytorch con --no-deps para que NO reinstale torch/torchvision.
+#   Ej:  pip install facenet-pytorch --no-deps
+
+torch
+torchvision
+pillow
+numpy
+scipy
+
+facenet-pytorch          # Re-ID facial: MTCNN + InceptionResnetV1 (VGGFace2, 512-d)
+openai                   # cliente del LLM vía OpenRouter (chat / idiomas extra)
+langdetect
+transformers<5           # fallback NLLB-200 para normalización offline
+sentencepiece
+
+fastapi
+uvicorn[standard]
+python-multipart         # uploads (selfie / foto del lugar / enroll)
+python-dotenv
+requests
