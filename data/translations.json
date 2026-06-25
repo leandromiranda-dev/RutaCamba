@@ -1,0 +1,146 @@
+{
+  "Cambodromo": {
+    "es": {
+      "nombre": "Cambódromo de Santa Cruz de la Sierra",
+      "descripcion": "Recinto construido para los desfiles de comparsas del Carnaval Cruceño, uno de los carnavales más importantes de Bolivia. Es un espacio público amplio que también se usa para otros eventos masivos de la ciudad fuera de la temporada de carnaval."
+    },
+    "en": {
+      "nombre": "Cambódromo of Santa Cruz de la Sierra",
+      "descripcion": "Venue built for the parades of the \"comparsas\" (parade groups) of the Santa Cruz Carnival, one of the most important carnivals in Bolivia. It is a large public space that is also used for other mass events in the city outside of the carnival season."
+    },
+    "fr": {
+      "nombre": "Cambódromo de Santa Cruz de la Sierra",
+      "descripcion": "Enclos construit pour les défilés des comparsas du Carnaval Cruceño, l'un des carnavals les plus importants de Bolivie. C'est un vaste espace public qui est également utilisé pour d'autres événements de masse de la ville en dehors de la saison du carnaval."
+    },
+    "it": {
+      "nombre": "Cambódromo di Santa Cruz de la Sierra",
+      "descripcion": "Recinto costruito per le sfilate delle \"comparsas\" del Carnevale Cruceño, uno dei carnevali più importanti della Bolivia. È un ampio spazio pubblico utilizzato anche per altri eventi di massa della città al di fuori della stagione di carnevale."
+    }
+  },
+  "CatedralMunicipal": {
+    "es": {
+      "nombre": "Catedral Basílica Menor San Lorenzo",
+      "descripcion": "Templo católico ubicado en la Plaza 24 de Septiembre, corazón histórico de Santa Cruz de la Sierra. Es la catedral más importante del departamento y uno de los edificios coloniales más representativos de la ciudad."
+    },
+    "en": {
+      "nombre": "Minor Basilica Cathedral of St. Lawrence",
+      "descripcion": "Catholic temple located in the Plaza 24 de Septiembre, the historical heart of Santa Cruz de la Sierra. It is the most important cathedral in the department and one of the most representative colonial buildings in the city."
+    },
+    "fr": {
+      "nombre": "Cathédrale Basilique Mineure San Lorenzo",
+      "descripcion": "Temple catholique situé sur la Plaza 24 de Septiembre, le cœur historique de Santa Cruz de la Sierra. C'est la cathédrale la plus importante du département et l'un des édifices coloniaux les plus représentatifs de la ville."
+    },
+    "it": {
+      "nombre": "Cattedrale Basilica Minore San Lorenzo",
+      "descripcion": "Tempio cattolico situato nella Plaza 24 de Septiembre, cuore storico di Santa Cruz de la Sierra. È la cattedrale più importante del dipartimento e uno degli edifici coloniali più rappresentativi della città."
+    }
+  },
+  "Cristo": {
+    "es": {
+      "nombre": "Cristo Redentor de Santa Cruz",
+      "descripcion": "Estatua monumental del Cristo Redentor ubicada en la ciudad de Santa Cruz de la Sierra, Bolivia. Es uno de los íconos más reconocidos de la ciudad, situada en un punto elevado que ofrece vistas panorámicas sobre la urbe y sus alrededores."
+    },
+    "en": {
+      "nombre": "Christ the Redeemer of Santa Cruz",
+      "descripcion": "Monumental statue of Christ the Redeemer located in the city of Santa Cruz de la Sierra, Bolivia. It is one of the city's most recognized icons, situated on an elevated point offering panoramic views of the urban area and its surroundings."
+    },
+    "fr": {
+      "nombre": "Christ Rédempteur de Santa Cruz",
+      "descripcion": "Statue monumentale du Christ Rédempteur située dans la ville de Santa Cruz de la Sierra, en Bolivie. C'est l'une des icônes les plus reconnues de la ville, située sur un point élevé qui offre des vues panoramiques sur l'agglomération et ses environs."
+    },
+    "it": {
+      "nombre": "Cristo Redentore di Santa Cruz",
+      "descripcion": "Statua monumentale del Cristo Redentore situata nella città di Santa Cruz de la Sierra, Bolivia. È una delle icone più riconosciute della città, posizionata su un punto elevato che offre viste panoramiche sulla città e i suoi dintorni."
+    }
+  },
+  "DunasArena": {
+    "es": {
+      "nombre": "Lomas de Arena",
+      "descripcion": "Parque regional con dunas de arena y lagunas estacionales, ubicado al sur de Santa Cruz de la Sierra. Es un ecosistema único de Bolivia, donde el desierto y la laguna conviven en perfecta armonía. Ideal para sandboarding y fotografía de naturaleza."
+    },
+    "en": {
+      "nombre": "Lomas de Arena",
+      "descripcion": "Regional park with sand dunes and seasonal lagoons, located south of Santa Cruz de la Sierra. It is a unique ecosystem in Bolivia, where the desert and the lagoon coexist in perfect harmony. Ideal for sandboarding and nature photography."
+    },
+    "fr": {
+      "nombre": "Lomas de Arena",
+      "descripcion": "Parc régional avec des dunes de sable et des lagunes saisonnières, situé au sud de Santa Cruz de la Sierra. C'est un écosystème unique de Bolivie, où le désert et la lagune coexistent en parfaite harmonie. Idéal pour le sandboard et la photographie de nature."
+    },
+    "it": {
+      "nombre": "Lomas de Arena",
+      "descripcion": "Parco regionale con dune sabbiose e lagune stagionali, situato a sud di Santa Cruz de la Sierra. È un ecosistema unico della Bolivia, dove il deserto e la laguna convivono in perfetta armonia. Ideale per il sandboarding e la fotografia naturalistica."
+    }
+  },
+  "ParqueUrbano": {
+    "es": {
+      "nombre": "Parque Urbano",
+      "descripcion": "Parque recreativo de gran extensión dentro de la ciudad de Santa Cruz de la Sierra, con áreas verdes, senderos y espacios de esparcimiento. Es un punto de encuentro popular para actividades al aire libre de los vecinos de la ciudad."
+    },
+    "en": {
+      "nombre": "Urban Park",
+      "descripcion": "A large recreational park within the city of Santa Cruz de la Sierra, featuring green areas, walking trails, and leisure spaces. It is a popular gathering spot for outdoor activities for the city's residents."
+    },
+    "fr": {
+      "nombre": "Parc Urbain",
+      "descripcion": "Vaste parc récréatif au cœur de la ville de Santa Cruz de la Sierra, avec des espaces verts, des sentiers et des aires de loisirs. C'est un lieu de rencontre populaire pour les activités de plein air des habitants de la ville."
+    },
+    "it": {
+      "nombre": "Parque Urbano",
+      "descripcion": "Ampio parco ricreativo all'interno della città di Santa Cruz de la Sierra, con aree verdi, sentieri e spazi per il tempo libero. È un popolare punto d'incontro per le attività all'aperto dei residenti della città."
+    }
+  },
+  "Plaza24": {
+    "es": {
+      "nombre": "Plaza 24 de Septiembre",
+      "descripcion": "Plaza principal y centro histórico de Santa Cruz de la Sierra. Está rodeada de edificios coloniales, la Catedral y sedes de gobierno, y es el punto de encuentro social más tradicional de la ciudad."
+    },
+    "en": {
+      "nombre": "24 de Septiembre Square",
+      "descripcion": "Main square and historical center of Santa Cruz de la Sierra. It is surrounded by colonial buildings, the Cathedral, and government headquarters, and is the city's most traditional social gathering point."
+    },
+    "fr": {
+      "nombre": "Plaza 24 de Septiembre",
+      "descripcion": "Place principale et centre historique de Santa Cruz de la Sierra. Entourée de bâtiments coloniaux, de la Cathédrale et des sièges du gouvernement, c'est le lieu de rencontre social le plus traditionnel de la ville."
+    },
+    "it": {
+      "nombre": "Plaza 24 de Septiembre",
+      "descripcion": "Piazza principale e centro storico di Santa Cruz de la Sierra. È circondata da edifici coloniali, la Cattedrale e sedi governative, ed è il punto d'incontro sociale più tradizionale della città."
+    }
+  },
+  "Tahuichi": {
+    "es": {
+      "nombre": "Estadio Ramón Tahuichi Aguilera",
+      "descripcion": "Estadio de fútbol principal de Santa Cruz de la Sierra, sede de partidos profesionales y asociado a la célebre academia de fútbol formativo \"Tahuichi\", que lleva el nombre del mismo homenajeado."
+    },
+    "en": {
+      "nombre": "Ramón Tahuichi Aguilera Stadium",
+      "descripcion": "The main football stadium of Santa Cruz de la Sierra, venue for professional matches and associated with the renowned formative football academy 'Tahuichi', named after the same honoree."
+    },
+    "fr": {
+      "nombre": "Stade Ramón Tahuichi Aguilera",
+      "descripcion": "Principal stade de football de Santa Cruz de la Sierra, il accueille des matchs professionnels et est associé à la célèbre académie de formation de football \"Tahuichi\", qui porte le nom du même personnage honoré."
+    },
+    "it": {
+      "nombre": "Stadio Ramón Tahuichi Aguilera",
+      "descripcion": "Principale stadio di calcio di Santa Cruz de la Sierra, sede di partite professionistiche e associato alla celebre accademia di calcio formativo \"Tahuichi\", che porta il nome dello stesso omaggiato."
+    }
+  },
+  "Ventura": {
+    "es": {
+      "nombre": "Ventura Mall",
+      "descripcion": "Centro comercial moderno de Santa Cruz de la Sierra, con tiendas, restaurantes y espacios de entretenimiento. Es uno de los destinos de compras y ocio más visitados de la ciudad."
+    },
+    "en": {
+      "nombre": "Ventura Mall",
+      "descripcion": "Modern shopping mall in Santa Cruz de la Sierra, featuring shops, restaurants, and entertainment areas. It is one of the most visited shopping and leisure destinations in the city."
+    },
+    "fr": {
+      "nombre": "Ventura Mall",
+      "descripcion": "Centre commercial moderne à Santa Cruz de la Sierra, proposant des boutiques, des restaurants et des espaces de divertissement. C'est l'une des destinations de shopping et de loisirs les plus visitées de la ville."
+    },
+    "it": {
+      "nombre": "Ventura Mall",
+      "descripcion": "Moderno centro commerciale di Santa Cruz de la Sierra, con negozi, ristoranti e spazi di intrattenimento. È una delle destinazioni per lo shopping e il tempo libero più visitate della città."
+    }
+  }
+}
