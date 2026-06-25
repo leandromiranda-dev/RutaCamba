@@ -338,20 +338,23 @@ class TranslationService:
                 "Para generar el JSON: python scripts/generate_translations.py"
             )
 
-        self._anthropic_client = None
+        self._openrouter_client = None
         try:
-            import anthropic  # noqa: F401
-            api_key = os.environ.get("ANTHROPIC_API_KEY")
+            from openai import OpenAI
+            api_key = os.environ.get("OPENROUTER_API_KEY")
             if api_key:
-                self._anthropic_client = anthropic.Anthropic(api_key=api_key)
-                logger.info("TranslationService: cliente Anthropic inicializado.")
+                self._openrouter_client = OpenAI(
+                    base_url="https://openrouter.ai/api/v1",
+                    api_key=api_key,
+                )
+                logger.info("TranslationService: cliente OpenRouter inicializado.")
             else:
                 logger.warning(
-                    "ANTHROPIC_API_KEY no configurada. "
+                    "OPENROUTER_API_KEY no configurada. "
                     "Se usará JSON o datos estáticos para las traducciones."
                 )
         except ImportError:
-            logger.warning("anthropic no instalado. pip install anthropic")
+            logger.warning("openai no instalado. pip install openai")
 
         self._nllb_pipeline = None
 
@@ -377,7 +380,7 @@ class TranslationService:
             }
         """
         # Nivel 1: LLM en vivo
-        if self._anthropic_client is not None:
+        if self._openrouter_client is not None:
             result = self._get_info_from_llm(landmark_id)
             if result is not None:
                 return result
@@ -430,7 +433,7 @@ class TranslationService:
                 "method": "passthrough",
             }
 
-        if self._anthropic_client is not None:
+        if self._openrouter_client is not None:
             result = self._normalize_with_llm(query, detected_lang)
             if result is not None:
                 return result
@@ -440,8 +443,8 @@ class TranslationService:
     # ── Métodos internos ──────────────────────────────────────────────────────
 
     def _get_info_from_llm(self, landmark_id: str) -> Optional[dict]:
-        """Genera info del landmark en ES/EN/FR/IT con Claude API. Devuelve None si falla."""
-        if self._anthropic_client is None:
+        """Genera info del landmark en ES/EN/FR/IT con OpenRouter. Devuelve None si falla."""
+        if self._openrouter_client is None:
             return None
 
         display_name = (
@@ -465,12 +468,12 @@ class TranslationService:
         )
 
         try:
-            response = self._anthropic_client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            response = self._openrouter_client.chat.completions.create(
+                model="google/gemini-2.5-flash-lite",
                 max_tokens=600,
                 messages=[{"role": "user", "content": prompt}],
             )
-            raw = response.content[0].text.strip()
+            raw = response.choices[0].message.content.strip()
 
             # Limpiar bloques de código markdown si los hay
             if raw.startswith("```"):
@@ -508,7 +511,7 @@ class TranslationService:
             return "unknown"
 
     def _normalize_with_llm(self, query: str, detected_lang: str) -> Optional[dict]:
-        """Intenta normalizar al español con Claude. Devuelve None si falla."""
+        """Intenta normalizar al español con OpenRouter. Devuelve None si falla."""
         prompt = (
             "Eres un asistente turístico especializado en Santa Cruz de la Sierra, Bolivia. "
             "El usuario busca un lugar turístico. Su consulta puede estar en cualquier idioma. "
@@ -520,12 +523,12 @@ class TranslationService:
             "Si no podés identificar el lugar, respondé: NO_MATCH"
         )
         try:
-            response = self._anthropic_client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            response = self._openrouter_client.chat.completions.create(
+                model="google/gemini-2.5-flash-lite",
                 max_tokens=128,
                 messages=[{"role": "user", "content": prompt}],
             )
-            normalized = response.content[0].text.strip()
+            normalized = response.choices[0].message.content.strip()
             logger.info(f"LLM normalizó '{query}' → '{normalized}'")
             return {
                 "original": query,

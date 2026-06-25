@@ -9,7 +9,6 @@ data/val/
 data/test/
 data/gallery/
 data/googleDrive/
-data/translations.json
 data/*.csv
 !data/manifest.csv
 models/*.pt

@@ -85,6 +85,18 @@ class TestTranslationServiceWithJsonFile:
 
 
 class TestTranslationServiceLLM:
+    def _make_mock_client(self, response_text: str):
+        """Crea un mock de openai.OpenAI con la interfaz chat.completions.create."""
+        mock_message = MagicMock()
+        mock_message.content = response_text
+        mock_choice = MagicMock()
+        mock_choice.message = mock_message
+        mock_response = MagicMock()
+        mock_response.choices = [mock_choice]
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_response
+        return mock_client
+
     def test_llm_result_used_when_client_available(self, tmp_path):
         svc = TranslationService(translations_path=str(tmp_path / "no_file.json"))
         llm_response = {
@@ -93,11 +105,7 @@ class TestTranslationServiceLLM:
             "fr": {"nombre": "Cristo LLM FR", "descripcion": "LLM Desc"},
             "it": {"nombre": "Cristo LLM IT", "descripcion": "LLM Desc"},
         }
-        mock_client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text=json.dumps(llm_response))]
-        mock_client.messages.create.return_value = mock_response
-        svc._anthropic_client = mock_client
+        svc._openrouter_client = self._make_mock_client(json.dumps(llm_response))
 
         result = svc.get_landmark_translations("Cristo")
         assert result["es"]["nombre"] == "Cristo LLM ES"
@@ -105,8 +113,8 @@ class TestTranslationServiceLLM:
     def test_falls_back_to_static_when_llm_raises(self, tmp_path):
         svc = TranslationService(translations_path=str(tmp_path / "no_file.json"))
         mock_client = MagicMock()
-        mock_client.messages.create.side_effect = Exception("Network error")
-        svc._anthropic_client = mock_client
+        mock_client.chat.completions.create.side_effect = Exception("Network error")
+        svc._openrouter_client = mock_client
 
         result = svc.get_landmark_translations("Cristo")
         expected = _STATIC_TRANSLATIONS["Cristo"]["es"]["nombre"]
@@ -114,11 +122,7 @@ class TestTranslationServiceLLM:
 
     def test_falls_back_when_llm_returns_invalid_json(self, tmp_path):
         svc = TranslationService(translations_path=str(tmp_path / "no_file.json"))
-        mock_client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="esto no es JSON")]
-        mock_client.messages.create.return_value = mock_response
-        svc._anthropic_client = mock_client
+        svc._openrouter_client = self._make_mock_client("esto no es JSON")
 
         result = svc.get_landmark_translations("Ventura")
         assert "es" in result and "nombre" in result["es"]
