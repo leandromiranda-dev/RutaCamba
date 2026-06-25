@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartTravel AI - Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f7f9fb",
+                    "surface-dim": "#d8dadc",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-secondary-fixed-variant": "#004f53",
+                    "inverse-primary": "#a7c8ff",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#3a5f94",
+                    "outline": "#737780",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container": "#eceef0",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#006c71",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#0e1f32",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "primary-fixed": "#d5e3ff",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "secondary-fixed-dim": "#00dce5",
+                    "primary-container": "#003366",
+                    "primary": "#001e40",
+                    "outline-variant": "#c3c6d1",
+                    "background": "#f7f9fb",
+                    "on-surface-variant": "#43474f",
+                    "on-background": "#191c1e",
+                    "surface-variant": "#e0e3e5",
+                    "on-primary-container": "#799dd6",
+                    "tertiary-container": "#243448",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "on-tertiary-container": "#8c9cb5",
+                    "on-surface": "#191c1e",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#63f7ff",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "secondary": "#00696e",
+                    "surface-bright": "#f7f9fb",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed": "#002021",
+                    "on-primary-fixed": "#001b3c",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "secondary-container": "#00f4fe",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#d3e4fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "caption": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Montserrat"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "headline-lg": [
+                            "Montserrat"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md h-full flex flex-col md:flex-row overflow-hidden">
+<!-- TopNavBar (Mobile) / SideNavBar (Desktop) -->
+<!-- Mobile Header (hidden on md) -->
+<header class="md:hidden flex justify-between items-center px-4 py-3 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 sticky top-0 z-50">
+<div class="font-headline-md text-headline-md font-bold text-primary">SmartTravel AI</div>
+<button class="text-primary p-2">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</header>
+<!-- Desktop Sidebar (hidden on mobile) -->
+<nav class="hidden md:flex flex-col h-screen sticky left-0 top-0 p-base bg-surface border-r border-outline-variant w-64 shadow-md z-40">
+<div class="flex items-center gap-3 p-4 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="travel_explore">travel_explore</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary font-bold">SmartTravel</h1>
+</div>
+</div>
+<div class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="center_focus_strong">center_focus_strong</span>
+<span class="font-label-md text-label-md">Camera Scan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-container text-on-primary-container font-bold shadow-sm" href="#">
+<span class="material-symbols-outlined" data-icon="forum" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-label-md text-label-md">AI Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-label-md text-label-md">Saved Trips</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/50">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<div class="flex items-center gap-3 p-4 mt-2 bg-surface-container-low rounded-xl">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A small circular avatar profile picture showing a professional headshot of a smiling traveler against a blurred bright modern background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbqRaqhicjGkreOEX42bRLcYLC4JpF80ATb7XFc3lcYVxBosUV31BoHjnNfV59dE1i3pWBB0SSx3hTpRJMx5EZrpGrUE1DaE3QXnXejQx1t_skuS8gVmOivt2wvlp6bXBVFcfD6UC3k9n-ckSj6RZoD3hAlCe22r1XVj5gWIc7RFEXqhtcgZRnfuHWwegpFkZrkqU7qddMj2ZYfCXx6SGBw7DgUrTkmoErOsZU58KW-aYTH9ByWqkrzHfmZO7aCcZ3ip3tA4VLbEc"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Traveler Elite</p>
+<p class="font-caption text-caption text-on-surface-variant">Premium Member</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-background">
+<!-- Left Panel: Context/Location Preview (Hidden on small mobile, shown on tablet+) -->
+<aside class="hidden lg:flex flex-col w-1/3 max-w-sm border-r border-outline-variant/50 bg-surface-container-lowest overflow-y-auto">
+<div class="p-6">
+<h2 class="font-headline-md text-headline-md text-primary mb-4">Location Context</h2>
+<div class="rounded-xl overflow-hidden shadow-sm border border-outline-variant/30 mb-6 group relative">
+<img class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A stunning, high-quality photograph of a famous Spanish architectural landmark bathed in warm, golden hour sunlight. The modern yet historic stone structures are surrounded by vibrant green foliage under a clear blue sky. The lighting is bright and inviting, perfect for a high-end travel application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKi1fDc5eKSYAMO-RRfiUZzHErxvwPTj4Xit6Kcfw5FGpN_Df8j7LCl1zzsyTiHni1dx1yIQR1SUsMtaFzFI73NCnUiMw6fHF3tp7C9OAU1npnGeCEO84exZRs7vivFal1B7WXOmzlcr-zY3ZBkyGUhn61jPEV-uLwtlILFU-a_lO7WtNR0QZzn-_1Hg3wPkmg6l6eGHMu8weO2Q0V6fjbNl8n4jexTd3IuJN6wLs1bgFRraPm-AMPkpMdjWfePDjjOlGYYE3OQCE"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent pointer-events-none"></div>
+<div class="absolute bottom-4 left-4 text-white">
+<p class="font-label-md text-label-md opacity-90">Identified Location</p>
+<p class="font-headline-md text-body-lg font-bold">Sagrada Familia</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container rounded-lg p-4">
+<div class="flex items-center gap-2 mb-2 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<h3 class="font-label-md text-label-md">Barcelona, Spain</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">
+                            A large unfinished Roman Catholic minor basilica in the Eixample district of Barcelona, Catalonia, Spain. Designed by Catalan architect Antoni Gaudí.
+                        </p>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-secondary-fixed/20 text-secondary border border-secondary/30 rounded-full font-caption text-caption">Architecture</span>
+<span class="px-3 py-1 bg-secondary-fixed/20 text-secondary border border-secondary/30 rounded-full font-caption text-caption">Historic</span>
+<span class="px-3 py-1 bg-secondary-fixed/20 text-secondary border border-secondary/30 rounded-full font-caption text-caption">Must See</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Right Panel: Chat Interface -->
+<section class="flex-1 flex flex-col h-full bg-surface-container-lowest relative">
+<!-- Chat Header -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant/30 bg-surface/90 backdrop-blur-md z-10 sticky top-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md relative">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-surface-container-lowest"></div>
+</div>
+<div>
+<h2 class="font-headline-md text-body-lg text-primary">AI Guide</h2>
+<p class="font-caption text-caption text-secondary">Online • Ready to help</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<!-- Chat Area -->
+<div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+<!-- Time separator -->
+<div class="flex justify-center">
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full font-caption text-caption">Today, 10:42 AM</span>
+</div>
+<!-- AI Message -->
+<div class="flex gap-4 max-w-[85%] md:max-w-2xl">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mt-1">
+<span class="material-symbols-outlined text-sm" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant/20 rounded-2xl rounded-tl-sm p-4 shadow-[0_2px_10px_rgba(0,30,64,0.02)]">
+<p class="font-body-md text-body-md text-on-surface">
+                            ¡Hola! Soy tu asistente experto. ¿Qué te gustaría saber sobre este lugar?
+                        </p>
+<!-- Quick Reply Chips -->
+<div class="mt-4 flex flex-wrap gap-2">
+<button class="px-4 py-2 bg-surface text-primary border border-outline-variant/40 hover:border-secondary hover:text-secondary rounded-full font-label-md text-label-md transition-all shadow-sm">
+                                ¿Cuál es la historia?
+                            </button>
+<button class="px-4 py-2 bg-surface text-primary border border-outline-variant/40 hover:border-secondary hover:text-secondary rounded-full font-label-md text-label-md transition-all shadow-sm">
+                                Horarios y entradas
+                            </button>
+<button class="px-4 py-2 bg-surface text-primary border border-outline-variant/40 hover:border-secondary hover:text-secondary rounded-full font-label-md text-label-md transition-all shadow-sm">
+                                Datos curiosos
+                            </button>
+</div>
+</div>
+</div>
+<!-- Typing indicator (hidden by default, shown for realism) -->
+<!-- 
+                <div class="flex gap-4 max-w-[85%]">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm" data-icon="smart_toy">smart_toy</span>
+                    </div>
+                    <div class="bg-surface-container-low border border-outline-variant/20 rounded-2xl rounded-tl-sm p-4 flex gap-1 items-center">
+                        <div class="w-2 h-2 bg-outline-variant rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-outline-variant rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-outline-variant rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+                -->
+</div>
+<!-- Input Area -->
+<div class="p-4 bg-surface/90 backdrop-blur-md border-t border-outline-variant/30 mb-16 md:mb-0">
+<div class="max-w-4xl mx-auto">
+<div class="flex items-center gap-2 bg-surface-container rounded-full p-2 border border-outline-variant/40 focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all shadow-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 font-body-md text-body-md text-on-surface placeholder-on-surface-variant px-2 h-10" placeholder="Escribe tu mensaje..." type="text"/>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface mr-1">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors shadow-md transform active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+</button>
+</div>
+<div class="text-center mt-2">
+<span class="font-caption text-caption text-on-surface-variant/70">AI responses may be inaccurate. Verify important information.</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/90 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,51,102,0.05)] border-t border-outline-variant/10">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high p-2 rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-md text-[10px] mt-1">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high p-2 rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+<span class="font-label-md text-[10px] mt-1">Scan</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1 transition-all duration-200 shadow-sm" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-label-md text-[10px] mt-1 font-bold">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high p-2 rounded-xl transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-[10px] mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

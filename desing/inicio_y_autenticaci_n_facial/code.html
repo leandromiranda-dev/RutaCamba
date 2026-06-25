@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartTravel AI - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f7f9fb",
+                    "surface-dim": "#d8dadc",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-secondary-fixed-variant": "#004f53",
+                    "inverse-primary": "#a7c8ff",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#3a5f94",
+                    "outline": "#737780",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container": "#eceef0",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#006c71",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#0e1f32",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "primary-fixed": "#d5e3ff",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "secondary-fixed-dim": "#00dce5",
+                    "primary-container": "#003366",
+                    "primary": "#001e40",
+                    "outline-variant": "#c3c6d1",
+                    "background": "#f7f9fb",
+                    "on-surface-variant": "#43474f",
+                    "on-background": "#191c1e",
+                    "surface-variant": "#e0e3e5",
+                    "on-primary-container": "#799dd6",
+                    "tertiary-container": "#243448",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "on-tertiary-container": "#8c9cb5",
+                    "on-surface": "#191c1e",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#63f7ff",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "secondary": "#00696e",
+                    "surface-bright": "#f7f9fb",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed": "#002021",
+                    "on-primary-fixed": "#001b3c",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "secondary-container": "#00f4fe",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#d3e4fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "caption": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Montserrat"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "headline-lg": [
+                            "Montserrat"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 0.5px solid rgba(255, 255, 255, 0.3);
+        }
+        .scan-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #00dce5, transparent);
+            position: absolute;
+            animation: scan 2s infinite ease-in-out;
+        }
+        @keyframes scan {
+            0% { top: 10%; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { top: 90%; opacity: 0; }
+        }
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #00dce5;
+            animation: pulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            opacity: 0;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col overflow-x-hidden relative">
+<!-- Top Navigation (Hidden on linear intent per rules, but prompt requested 'Navigation included'. We will show it as a minimal anchor header since this is a landing/auth screen, suppressing links per intent rules, but keeping brand identity.) -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm w-full sticky top-0 z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 h-16">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="travel_explore">travel_explore</span>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">SmartTravel AI</span>
+</div>
+<div class="hidden md:flex gap-6 items-center">
+<!-- Suppressed nav links per transactional intent, keeping trailing icon for consistency -->
+</div>
+<button aria-label="Account" class="text-primary hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col md:flex-row relative">
+<!-- Background Image/Graphic Section (Desktop Left, Mobile Top/Background) -->
+<div class="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden hidden md:block">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A luxurious, high-tech travel concept featuring a sleek, futuristic airport terminal bathed in bright, natural light. The aesthetic is modern corporate with deep ocean blue accents and clean white architecture. A blurred, fast-moving train is visible through expansive glass windows. The mood is efficient, premium, and welcoming, embodying the future of smart travel." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9kkCwtBzkonXt0V4LXFvXhZS8hg7iJNnM92qebS0ir_av2K7stnMUOktYFO7CDLATY92j0Zxs88iWKnWE1ttxlRfzy88FZe1ua7mbhG31x8LjOm8KYcqzJuPNebh_t-jq0na62Af1R3hL3aWqvjKsn7n2Ka9EdpdZuk3npOdzv4dU8jatUATQ6CR3Q1elxpak4PaqyLkk4FrIU_nps580m81F9qqklU3JeOxGkpkYpt0TfkmIU7grAhAfhQu8M2blu83Df3_y_Go')"></div>
+<!-- Glass Overlay Info -->
+<div class="absolute bottom-margin-desktop left-margin-desktop right-margin-desktop glass-panel rounded-xl p-6 shadow-lg">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">SmartTravel AI</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Seamless journeys start with intelligent recognition. Experience frictionless travel worldwide.</p>
+</div>
+</div>
+<!-- Mobile Background (Absolute behind content) -->
+<div class="md:hidden absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center opacity-30" data-alt="A luxurious, high-tech travel concept featuring a sleek, futuristic airport terminal bathed in bright, natural light. The aesthetic is modern corporate with deep ocean blue accents and clean white architecture. A blurred, fast-moving train is visible through expansive glass windows. The mood is efficient, premium, and welcoming, embodying the future of smart travel." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaRfLC5rrjkm7VNzXEitR9uPSEY6MVvnTzLZpBAR_CApS6QZA-IKKPqdbvVXqmwoPI9M70oHnlUuIazpgwV1vRrI9f_STiBOePJ9M3_IRcLf6xSCTp2uA4CW63wHEkUzTjhR5dklMycI2RgyaRemiEdNNapDtNRBnE4tGve1XBqIsbs8_Z7g2xp6wsjCe1Qjp5E7X5j8wvS2xtGjEFNF4hs27cqPZV0I1E-lTwolFGFk2ltIrWo2bg4DrUVazM9hoIXaF5Hhfo6vI')"></div>
+</div>
+<!-- Authentication Section (Right/Foreground) -->
+<div class="w-full md:w-1/2 flex flex-col justify-center items-center p-margin-mobile md:p-margin-desktop relative z-10 bg-surface/90 md:bg-surface backdrop-blur-sm min-h-[calc(100vh-64px)]">
+<div class="w-full max-w-md flex flex-col items-center text-center space-y-8">
+<!-- Welcome Text -->
+<div class="space-y-4">
+<h1 class="font-display-lg text-display-lg text-primary tracking-tight">
+                        Bienvenidos a la<br/><span class="text-secondary">nueva era</span> del turismo
+                    </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm mx-auto">
+                        Exclusive access to personalized itineraries, rapid boarding, and intelligent global assistance.
+                    </p>
+</div>
+<!-- Biometric Scanner UI -->
+<div class="relative w-48 h-48 my-8 group cursor-pointer" onclick="simulateScan(this)">
+<!-- Outer Decorative Rings -->
+<div class="absolute inset-0 rounded-full border border-outline-variant/50"></div>
+<div class="absolute inset-2 rounded-full border-2 border-dashed border-primary-fixed-dim/30 animate-[spin_20s_linear_infinite]"></div>
+<!-- Scanner Area -->
+<div class="absolute inset-4 rounded-full bg-surface-container shadow-inner overflow-hidden flex items-center justify-center border-2 border-transparent group-hover:border-secondary transition-colors duration-300">
+<!-- Simulated Face Outline -->
+<span class="material-symbols-outlined text-[100px] text-surface-tint opacity-50" data-icon="face" data-weight="fill">face</span>
+<!-- Scanning Line -->
+<div class="scan-line hidden group-hover:block" id="activeScanLine"></div>
+</div>
+<!-- Pulse Ring on Active -->
+<div class="pulse-ring hidden" id="activePulse"></div>
+<!-- Corner Markers -->
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary"></div>
+</div>
+<!-- Login Button -->
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-4 rounded-lg shadow-[0px_8px_30px_rgba(0,51,102,0.2)] hover:bg-primary-container hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<span class="material-symbols-outlined relative z-10" data-icon="center_focus_strong">center_focus_strong</span>
+<span class="relative z-10">Face Recognition Login</span>
+</button>
+<!-- Alternative Options -->
+<div class="w-full flex flex-col space-y-4 pt-6 border-t border-outline-variant/30">
+<p class="font-caption text-caption text-outline">Alternative Access</p>
+<button class="w-full bg-surface text-secondary border border-secondary font-label-md text-label-md py-3 rounded-lg hover:bg-secondary-fixed/10 transition-colors duration-200">
+                        Use Email &amp; Password
+                    </button>
+<a class="font-label-md text-label-md text-primary hover:text-secondary underline underline-offset-4" href="#">Need Help?</a>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function simulateScan(element) {
+            const scanLine = element.querySelector('#activeScanLine');
+            const pulse = element.querySelector('#activePulse');
+            
+            scanLine.classList.remove('hidden');
+            pulse.classList.remove('hidden');
+            
+            setTimeout(() => {
+                scanLine.classList.add('hidden');
+                pulse.classList.add('hidden');
+                // Could trigger a success state or navigation here
+            }, 2000);
+        }
+    </script>
+</body></html>

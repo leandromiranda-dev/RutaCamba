@@ -1,0 +1,15 @@
+# .env.example — copiá este archivo a .env y completá los valores
+# El .env real está en .gitignore y NUNCA se sube al repo.
+# ── WandB (Nicole — Fase 5) ──────────────────────────────────────────────────
+WANDB_ENTITY=lozadaleonn
+WANDB_PROJECT=rutacamba
+WANDB_API_KEY=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
+# ── LLM para traducción (Jose — Fase 4) ─────────────────────────────────────
+ANTHROPIC_API_KEY=sk-ant-...
+# ── AWS S3 para bajar modelos (Nicole — Fase 6) ──────────────────────────────
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_DEFAULT_REGION=us-east-1
+# ── Puertos (opcionales, tienen defaults en config.py) ───────────────────────
+# API_PORT=8000
+# UI_PORT=7860

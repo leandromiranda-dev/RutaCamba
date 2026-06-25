@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()  # carga .env antes de que src.config lea os.getenv()
 
 import io
+import logging
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -24,6 +25,8 @@ from src.config import TOKEN_TTL
 from src.landmarks.predictor import LandmarkPredictor
 from src.reid.access import verify_identity
 from src.translation.translate import TranslationService
+
+logger = logging.getLogger(__name__)
 
 # ── Estado global (cargado una sola vez en startup) ───────────────────────────
 _predictor: Optional[LandmarkPredictor] = None
@@ -39,6 +42,13 @@ async def lifespan(app: FastAPI):
     global _predictor, _translator
     _predictor = LandmarkPredictor()
     _translator = TranslationService()
+    # Pre-carga los modelos de Re-ID para que el primer /verify no sea lento
+    try:
+        from src.reid.embeddings import _load_models
+        _load_models()
+        logger.info("Modelos Re-ID pre-cargados correctamente.")
+    except Exception as e:
+        logger.warning(f"No se pudieron pre-cargar los modelos Re-ID: {e}. Se cargarán en el primer /verify.")
     yield
     _predictor = None
     _translator = None
