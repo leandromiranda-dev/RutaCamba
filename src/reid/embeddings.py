@@ -16,14 +16,31 @@ logger = logging.getLogger(__name__)
 
 _mtcnn: MTCNN = None
 _resnet: InceptionResnetV1 = None
+_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+_MAX_SIDE = 480  # redimensionar antes de MTCNN para acelerar detección
 
 
 def _load_models() -> None:
     global _mtcnn, _resnet
     if _mtcnn is None:
-        _mtcnn = MTCNN(image_size=160, margin=0, min_face_size=20)
-        _resnet = InceptionResnetV1(pretrained="vggface2").eval()
-        logger.info("Modelos facenet_pytorch cargados (VGGFace2, 512-d).")
+        logger.info(f"Cargando modelos facenet_pytorch en {_device} (primera vez puede tardar ~30s si descarga) ...")
+        _mtcnn = MTCNN(image_size=160, margin=0, min_face_size=20, device=_device)
+        _resnet = InceptionResnetV1(pretrained="vggface2").eval().to(_device)
+        # Warm-up: una pasada vacía para que JIT y CUDA compilen antes del primer request
+        with torch.inference_mode():
+            dummy = torch.zeros(1, 3, 160, 160).to(_device)
+            _resnet(dummy)
+        logger.info(f"Modelos facenet_pytorch listos en {_device} (VGGFace2, 512-d).")
+
+
+def _resize_for_detection(img: Image.Image) -> Image.Image:
+    """Reduce la imagen al lado máximo _MAX_SIDE manteniendo proporción."""
+    w, h = img.size
+    if max(w, h) <= _MAX_SIDE:
+        return img
+    scale = _MAX_SIDE / max(w, h)
+    return img.resize((int(w * scale), int(h * scale)), Image.BILINEAR)
 
 
 def get_embedding(image) -> np.ndarray:
@@ -44,15 +61,17 @@ def get_embedding(image) -> np.ndarray:
     else:
         img = Image.fromarray(np.array(image)).convert("RGB")
 
+    img = _resize_for_detection(img)
+
     face = _mtcnn(img)
     if face is None:
         logger.warning("MTCNN no detectó ningún rostro en la imagen.")
         return None
 
-    with torch.no_grad():
-        embedding = _resnet(face.unsqueeze(0))
+    with torch.inference_mode():
+        embedding = _resnet(face.unsqueeze(0).to(_device))
 
-    return embedding.squeeze().numpy()
+    return embedding.squeeze().cpu().numpy()
 
 
 def build_gallery(gallery_dir: str) -> dict:

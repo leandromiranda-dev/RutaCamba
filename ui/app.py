@@ -113,7 +113,7 @@ def _call_verify(name: str, selfie_path: str) -> requests.Response:
             f"{API_URL}/verify",
             data={"declared_id": name.strip()},
             files={"selfie": f},
-            timeout=30,
+            timeout=90,
         )
 
 
@@ -130,7 +130,12 @@ def _call_predict(token: str, img_path: str, k: int = 3) -> requests.Response:
 # ── Event handlers ─────────────────────────────────────────────────────────────
 
 def verify_fn(name: str, selfie_path: str):
+    import time as _time
+    _t0 = _time.time()
+    print(f"[verify_fn] INICIO name={name!r} selfie={selfie_path!r}")
+
     def _err(msg):
+        print(f"[verify_fn] ERROR en {_time.time()-_t0:.2f}s: {msg}")
         return msg, "", gr.update(), gr.update(), render_chat([]), []
 
     if not name.strip():
@@ -138,10 +143,15 @@ def verify_fn(name: str, selfie_path: str):
     if selfie_path is None:
         return _err("⚠️ Adjuntá una foto de tu cara o usá la cámara.")
 
+    print(f"[verify_fn] Llamando API en {_time.time()-_t0:.2f}s...")
+
     try:
         resp = _call_verify(name, selfie_path)
+        print(f"[verify_fn] API respondio en {_time.time()-_t0:.2f}s — status={resp.status_code}")
     except requests.ConnectionError:
         return _err("🔴 Sin conexión a la API. ¿Está corriendo el servidor?")
+    except requests.Timeout:
+        return _err("⏱️ La verificación tardó demasiado. Volvé a intentarlo.")
 
     if resp.status_code == 200:
         token = resp.json()["token"]
@@ -161,9 +171,19 @@ def verify_fn(name: str, selfie_path: str):
             history,
         )
 
-    detail = resp.json().get("detail", {})
-    top1 = detail.get("top1_identity", "desconocido") if isinstance(detail, dict) else str(detail)
-    return _err(f"❌ No verificado — el rostro más parecido es **{top1}**. Intentá con otra foto.")
+    if resp.status_code >= 500:
+        return _err(f"🔴 Error en el servidor ({resp.status_code}). Revisá que la API esté corriendo.")
+
+    try:
+        detail = resp.json().get("detail", {})
+    except Exception:
+        return _err(f"🔴 Respuesta inesperada del servidor ({resp.status_code}).")
+
+    top1 = detail.get("top1_identity", "") if isinstance(detail, dict) else ""
+    if top1:
+        return _err(f"❌ No verificado — el rostro más parecido es **{top1}**. Intentá con otra foto.")
+    err_msg = detail.get("error", "") if isinstance(detail, dict) else str(detail)
+    return _err(f"❌ Verificación fallida. {err_msg}" if err_msg else "❌ No verificado. Intentá con otra foto.")
 
 
 def toggle_attach(img_vis: bool):
@@ -616,7 +636,7 @@ with gr.Blocks(title="RutaCamba — Asistente Turístico") as demo:
         gr.HTML(_AUTH_SPACER)
 
         verify_btn = gr.Button("✓  Verificar identidad", elem_id="verify-btn")
-        verify_msg = gr.Markdown(elem_id="verify-msg")
+        verify_msg = gr.Markdown("", elem_id="verify-msg")
         gr.HTML(_AUTH_BOTTOM_SPACER)
 
     # ── PANTALLA 2: Chat WhatsApp-azul ─────────────────────────────────────────
