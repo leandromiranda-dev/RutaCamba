@@ -52,6 +52,27 @@ def step_verify(declared_id: str, selfie_path: str):
         )
 
 
+def _format_translations(landmark_id: str, translations: dict) -> str:
+    """Formatea la info multilingüe del landmark como markdown."""
+    title = landmark_id.replace("_", " ").title()
+    lang_labels = {
+        "es": "Espanol",
+        "en": "English",
+        "fr": "Francais",
+        "it": "Italiano",
+    }
+    sections = [f"## {title}\n"]
+    for lang_code, lang_label in lang_labels.items():
+        data = translations.get(lang_code, {})
+        if isinstance(data, dict) and data:
+            nombre = data.get("nombre", "—")
+            descripcion = data.get("descripcion", "—")
+            sections.append(f"### {lang_label}\n\n**{nombre}**\n\n{descripcion}")
+        else:
+            sections.append(f"### {lang_label}\n\n—")
+    return "\n\n---\n\n".join(sections)
+
+
 def step_predict(token: str, image_path: str, k: int):
     """Llama a POST /predict. Devuelve (dict para gr.Label, markdown de traducciones)."""
     if not token:
@@ -73,14 +94,7 @@ def step_predict(token: str, image_path: str, k: int):
     if response.status_code == 200:
         data = response.json()
         top_k_dict = {item[0]: float(item[1]) for item in data["top_k"]}
-        t = data["translations"]
-        info = (
-            f"### {data['landmark_id'].replace('_', ' ').title()}\n\n"
-            f"**ES:** {t.get('es', '—')}\n\n"
-            f"**EN:** {t.get('en', '—')}\n\n"
-            f"**FR:** {t.get('fr', '—')}\n\n"
-            f"**IT:** {t.get('it', '—')}"
-        )
+        info = _format_translations(data["landmark_id"], data["translations"])
         return top_k_dict, info
     elif response.status_code == 401:
         return {}, "Sesión expirada. Volvé a verificar tu identidad."
