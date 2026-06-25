@@ -49,7 +49,7 @@ class LandmarkPredictor:
     con canal alpha (RGBA) o en escala de grises romperían la normalización.
     """
 
-    def __init__(self, model_path: str = "models/transfer_learning.pt") -> None:
+    def __init__(self, model_path: str = "models/resnet_lite_scratch.pt") -> None:
         """Carga el modelo TorchScript una sola vez en memoria.
 
         Decisión: torch.jit.load() en lugar de reconstruir la clase TuristCNN
