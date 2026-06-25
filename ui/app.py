@@ -270,27 +270,27 @@ _AUTH_HERO = """
 """
 
 _AUTH_INSTRUCTIONS = """
-<div style="max-width:440px;margin:0 auto;padding:28px 24px 0;text-align:center;">
+<div style="max-width:440px;margin:0 auto;padding:14px 24px 0;text-align:center;">
   <div style="display:inline-flex;align-items:center;gap:8px;background:#DDEAFF;
-              border-radius:20px;padding:6px 16px;margin-bottom:18px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#1565C0;
+              border-radius:20px;padding:5px 14px;margin-bottom:8px;">
+    <span style="width:7px;height:7px;border-radius:50%;background:#1565C0;
                  display:inline-block;"></span>
-    <span style="font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;
+    <span style="font-family:DM Sans,sans-serif;font-size:12px;font-weight:700;
                  color:#1565C0;">Paso 1 — Verificación</span>
   </div>
-  <h2 style="font-family:Montserrat,sans-serif;font-size:21px;font-weight:800;
-             color:#0D1A33;margin:0 0 10px;">Verificá tu identidad</h2>
-  <p style="font-family:DM Sans,sans-serif;font-size:14px;color:#5A6A8A;
-            margin:0 auto;max-width:320px;line-height:1.65;">
-    Subí una foto de tu cara <strong>o abrí la cámara</strong>.
+  <h2 style="font-family:Montserrat,sans-serif;font-size:19px;font-weight:800;
+             color:#0D1A33;margin:0 0 5px;">Verificá tu identidad</h2>
+  <p style="font-family:DM Sans,sans-serif;font-size:13px;color:#5A6A8A;
+            margin:0 auto;max-width:300px;line-height:1.45;">
+    Subí una foto de tu cara <strong style="color:#0D1A33;">o abrí la cámara</strong>.
     Si la verificación pasa, entrás al chat turístico.
   </p>
 </div>
 """
 
-_AUTH_SPACER = '<div style="height:10px;"></div>'
+_AUTH_SPACER = '<div style="height:6px;"></div>'
 
-_AUTH_BOTTOM_SPACER = '<div style="height:32px;"></div>'
+_AUTH_BOTTOM_SPACER = '<div style="height:20px;"></div>'
 
 _CHAT_HEADER = """
 <div style="
@@ -413,6 +413,7 @@ footer, footer.svelte-1ax1toq { display: none !important; }
 #verify-msg .prose p {
   font-family: 'DM Sans', sans-serif !important;
   font-size: 14px !important;
+  color: #111111 !important;
   text-align: center !important;
   margin: 0 !important;
 }
