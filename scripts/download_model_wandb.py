@@ -9,8 +9,8 @@ import sys
 
 WANDB_ENTITY  = "lozadaleonn-ciencialink"
 WANDB_PROJECT = "rutacamba"
-ARTIFACT_NAME = "best-transfer:latest"
-OUTPUT_PATH   = "models/transfer_learning.pt"
+ARTIFACT_NAME = "best-resnet_lite:latest"
+OUTPUT_PATH   = "models/resnet_lite_scratch.pt"
 
 
 def main():

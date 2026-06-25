@@ -36,7 +36,7 @@ IMAGENET_STD  = [0.229, 0.224, 0.225]
 REID_MODEL      = "ArcFace"       # modelo de DeepFace
 REID_DISTANCE   = "cosine"        # métrica de distancia
 REID_THRESHOLD  = 0.40           # ⚠ punto de partida — Leandro/Jose lo ajustan con ROC/EER
-GALLERY_DIR     = "data/gallery"  # carpeta con subcarpetas por identidad
+GALLERY_DIR     = os.getenv("GALLERY_DIR", "data/gallery")
 
 # ── Entrenamiento (Alejandro — Fase 3) ───────────────────────────────────────
 BATCH_SIZE      = 32
@@ -51,7 +51,7 @@ WANDB_PROJECT   = os.getenv("WANDB_PROJECT", "rutacamba")
 WANDB_ENTITY    = os.getenv("WANDB_ENTITY", "")
 
 # ── Traducción (Jose — Fase 4) ───────────────────────────────────────────────
-TRANSLATIONS_PATH    = "data/translations.json"
+TRANSLATIONS_PATH    = os.getenv("TRANSLATIONS_PATH", "data/translations.json")
 SUPPORTED_LANGUAGES  = ["es", "en", "fr", "it"]
 
 # ── API (Nicole — Fase 6) ────────────────────────────────────────────────────

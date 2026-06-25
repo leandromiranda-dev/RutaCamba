@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: rutacamba-api
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements-api.txt wandb && python scripts/download_model_wandb.py
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: WANDB_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: REID_MOCK
+        value: "0"
+      - key: GALLERY_DIR
+        value: /data/gallery
+      - key: TRANSLATIONS_PATH
+        value: /data/translations.json
+    disk:
+      name: rutacamba-data
+      mountPath: /data
+      sizeGB: 1
