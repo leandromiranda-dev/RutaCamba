@@ -1,11 +1,11 @@
-"""generate_translations.py — Genera data/translations.json con Claude API.
+"""generate_translations.py — Genera data/translations.json con OpenRouter.
 
 Jose (Fase 4): ejecutá este script UNA vez offline para pre-generar las traducciones.
 
 Uso:
     python scripts/generate_translations.py --api-key <tu-clave>
     # O con variable de entorno:
-    set ANTHROPIC_API_KEY=<tu-clave>
+    set OPENROUTER_API_KEY=<tu-clave>
     python scripts/generate_translations.py
 
 Salida: data/translations.json con estructura:
@@ -28,6 +28,9 @@ import os
 import sys
 import time
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -120,20 +123,20 @@ LANGUAGE_NAMES = {
 }
 
 
-def translate_with_claude(
+def translate_with_llm(
     client,
     nombre: str,
     descripcion: str,
     target_lang_code: str,
     max_retries: int = 3,
 ) -> dict:
-    """Traduce nombre y descripción de un landmark usando Claude API.
+    """Traduce nombre y descripción de un landmark usando OpenRouter (Gemini Flash Lite).
 
     Implementa retry con backoff exponencial para manejar errores de red
     o rate limiting (✍️ Decisión — manejo de errores de red).
 
     Args:
-        client: instancia de anthropic.Anthropic.
+        client: instancia de openai.OpenAI configurada con OpenRouter.
         nombre: nombre del landmark en español.
         descripcion: descripción del landmark en español.
         target_lang_code: "en", "fr" o "it".
@@ -153,14 +156,15 @@ def translate_with_claude(
         f"descripcion: {descripcion}"
     )
 
+    raw = ""
     for attempt in range(max_retries):
         try:
-            response = client.messages.create(
-                model="claude-sonnet-4-20250514",
+            response = client.chat.completions.create(
+                model="google/gemini-2.5-flash-lite",
                 max_tokens=512,
                 messages=[{"role": "user", "content": prompt}],
             )
-            raw = response.content[0].text.strip()
+            raw = response.choices[0].message.content.strip()
 
             # Limpiar posibles bloques de código markdown
             if raw.startswith("```"):
@@ -192,14 +196,17 @@ def translate_with_claude(
 
 
 def generate_translations(api_key: str, output_path: str) -> None:
-    """Genera translations.json con Claude para los 8 landmarks."""
+    """Genera translations.json con OpenRouter (Gemini Flash Lite) para los 8 landmarks."""
     try:
-        import anthropic
+        from openai import OpenAI
     except ImportError:
-        logger.error("Instalá anthropic: pip install anthropic")
+        logger.error("Instalá openai: pip install openai")
         sys.exit(1)
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+    )
     translations = {}
 
     total = len(LANDMARK_CATALOG)
@@ -216,7 +223,7 @@ def generate_translations(api_key: str, output_path: str) -> None:
         for lang_code in ("en", "fr", "it"):
             logger.info(f"  → Traduciendo a {lang_code}...")
             try:
-                translated = translate_with_claude(
+                translated = translate_with_llm(
                     client,
                     data_es["nombre"],
                     data_es["descripcion"],
@@ -247,12 +254,12 @@ def generate_translations(api_key: str, output_path: str) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Genera data/translations.json con Claude API (correr UNA vez offline)."
+        description="Genera data/translations.json con OpenRouter (correr UNA vez offline)."
     )
     parser.add_argument(
         "--api-key",
-        default=os.environ.get("ANTHROPIC_API_KEY"),
-        help="API key de Anthropic (o usar variable ANTHROPIC_API_KEY)",
+        default=os.environ.get("OPENROUTER_API_KEY"),
+        help="API key de OpenRouter (o usar variable OPENROUTER_API_KEY)",
     )
     parser.add_argument(
         "--output",
@@ -263,8 +270,8 @@ def main():
 
     if not args.api_key:
         logger.error(
-            "No se proporcionó API key de Anthropic.\n"
-            "Usá --api-key <clave> o configurá ANTHROPIC_API_KEY como variable de entorno."
+            "No se proporcionó API key de OpenRouter.\n"
+            "Usá --api-key <clave> o configurá OPENROUTER_API_KEY como variable de entorno."
         )
         sys.exit(1)
 

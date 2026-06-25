@@ -37,9 +37,9 @@ uvicorn api.main:app --reload
 
 Variables de entorno (`.env`):
 
-- `ANTHROPIC_API_KEY` — habilita el chat e idiomas extra. Sin clave, el sistema
-  sigue funcionando con las 4 traducciones offline (`data/translations.json`) y
-  el chat se oculta automáticamente.
+- `OPENROUTER_API_KEY` — habilita el chat e idiomas extra (LLM vía OpenRouter +
+  Gemini). Sin clave, el sistema sigue funcionando con las traducciones offline
+  (`data/translations.json` / `_STATIC_TRANSLATIONS`) y el chat se oculta solo.
 - `CORS_ORIGINS` — orígenes permitidos del frontend (coma-separados). Default:
   `http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000`.
 - `REID_MOCK=1` — **modo desarrollo**: simula el Re-ID y el enrolamiento para

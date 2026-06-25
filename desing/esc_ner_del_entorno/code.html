@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartTravel AI - Camera Scan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#f7f9fb",
+                      "surface-dim": "#d8dadc",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-secondary-fixed-variant": "#004f53",
+                      "inverse-primary": "#a7c8ff",
+                      "inverse-surface": "#2d3133",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface-container-high": "#e6e8ea",
+                      "on-secondary": "#ffffff",
+                      "surface-tint": "#3a5f94",
+                      "outline": "#737780",
+                      "surface-container-low": "#f2f4f6",
+                      "surface-container": "#eceef0",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "on-secondary-container": "#006c71",
+                      "on-tertiary": "#ffffff",
+                      "tertiary": "#0e1f32",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "primary-fixed": "#d5e3ff",
+                      "on-primary-fixed-variant": "#1f477b",
+                      "secondary-fixed-dim": "#00dce5",
+                      "primary-container": "#003366",
+                      "primary": "#001e40",
+                      "outline-variant": "#c3c6d1",
+                      "background": "#f7f9fb",
+                      "on-surface-variant": "#43474f",
+                      "on-background": "#191c1e",
+                      "surface-variant": "#e0e3e5",
+                      "on-primary-container": "#799dd6",
+                      "tertiary-container": "#243448",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "on-tertiary-container": "#8c9cb5",
+                      "on-surface": "#191c1e",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed": "#63f7ff",
+                      "primary-fixed-dim": "#a7c8ff",
+                      "secondary": "#00696e",
+                      "surface-bright": "#f7f9fb",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed": "#002021",
+                      "on-primary-fixed": "#001b3c",
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "secondary-container": "#00f4fe",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed": "#d3e4fe"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 0.5px solid rgba(255, 255, 255, 0.3);
+        }
+        .scanner-frame {
+            position: relative;
+            width: 250px;
+            height: 250px;
+        }
+        .scanner-frame::before, .scanner-frame::after, .scanner-frame > div::before, .scanner-frame > div::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: #00dce5;
+            border-style: solid;
+        }
+        .scanner-frame::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
+        .scanner-frame::after { top: 0; right: 0; border-width: 3px 3px 0 0; }
+        .scanner-frame > div::before { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+        .scanner-frame > div::after { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+        
+        @keyframes scanline {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(250px); opacity: 0; }
+        }
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #00dce5;
+            box-shadow: 0 0 8px #00dce5;
+            animation: scanline 2s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden lg:flex flex-col h-screen sticky left-0 top-0 p-base bg-surface dark:bg-inverse-surface text-primary dark:text-primary-fixed-dim border-r border-outline-variant dark:border-outline shadow-md w-64 z-50">
+<div class="flex items-center gap-3 p-4 mb-6">
+<span class="material-symbols-outlined text-3xl text-primary" data-weight="fill">travel_explore</span>
+<span class="font-headline-md text-headline-md text-primary font-bold">SmartTravel AI</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 mb-8 bg-surface-container rounded-lg">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-on-primary-container">person</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface">Traveler Elite</div>
+<div class="font-caption text-caption text-on-surface-variant">Premium Member</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-container text-on-primary-container font-bold active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="center_focus_strong" data-weight="fill">center_focus_strong</span>
+<span class="font-label-md text-label-md">Camera Scan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-md text-label-md">AI Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-label-md text-label-md">Saved Trips</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors active:translate-x-1 transition-transform mt-auto mb-4" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<button class="mt-auto w-full py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors">
+            Start New Scan
+        </button>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 relative h-screen w-full overflow-hidden bg-black flex flex-col items-center justify-center">
+<!-- Background Camera Feed (Placeholder Image) -->
+<div class="absolute inset-0 z-0">
+<img alt="Camera Feed" class="w-full h-full object-cover opacity-80" data-alt="A POV shot from a high-quality camera showing a grand European historical landmark, perhaps a cathedral or ancient ruin, on a bright sunny day. The image should be incredibly sharp and detailed, characteristic of a premium travel photography app's live camera feed. The colors should be vibrant but natural, with clear blue skies and rich architectural textures. Light mode aesthetic, realistic, modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKQfso_tfba9o4hI3SKaLu0jioM2aip9nGPNkpyTYyF2VqRa9BiBbEIElyEYyIQSRy-2PiaUPVU5_XA35RlOYxETCBl-9Y8sEXpy94EE3u9rBZ0AaMd-4GIZo-4btEL-zc-Tog3dwYew146DmhRpJBYnfN9CRPKReiLFqiCLa2KonBxdGcDvcw281J3G2CczbQs5XR0tzd8YqlWcWDQOAtFNbuIA0sWkHd3vXtP3z0XMXHFD6KNrT6G3_th5ATIjVN0LDIWfYYWdg"/>
+</div>
+<!-- Top HUD elements -->
+<div class="absolute top-0 w-full z-10 flex justify-between items-start p-4 md:p-8">
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-primary shadow-sm hover:bg-white/80 transition-colors">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+<div class="flex gap-4">
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-primary shadow-sm hover:bg-white/80 transition-colors">
+<span class="material-symbols-outlined text-xl">flash_off</span>
+</button>
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-primary shadow-sm hover:bg-white/80 transition-colors">
+<span class="material-symbols-outlined text-xl">help_outline</span>
+</button>
+</div>
+</div>
+<!-- Central Scanner Frame -->
+<div class="z-10 flex flex-col items-center justify-center mb-24">
+<div class="scanner-frame mb-8">
+<div></div>
+<div class="scan-line"></div>
+</div>
+<div class="glass-panel px-6 py-3 rounded-full flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container animate-pulse">auto_awesome</span>
+<span class="font-label-md text-label-md text-primary font-bold">Scanning landmark...</span>
+</div>
+</div>
+<!-- Bottom Controls -->
+<div class="absolute bottom-0 w-full z-10 pb-8 pt-12 bg-gradient-to-t from-black/60 to-transparent flex flex-col items-center justify-center lg:pb-12">
+<div class="flex items-center justify-center gap-12 w-full max-w-md px-4">
+<!-- Gallery Toggle -->
+<button class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-white overflow-hidden shadow-md">
+<img class="w-full h-full object-cover" data-alt="A small square thumbnail image showing a previously scanned beautiful landscape, perhaps a beach or mountain scene, acting as a gallery preview icon. Vibrant colors, daytime lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3lrra-eNibYm7OMzOcLUWG9zXnygnNVkeuNMZYluUjt9ZjY21KPbFDijrG_Lsmlmhj6rtzWxJJqnAoS4G7h-gJAnhrOLbkiQsfq09Zbz3g-Fn7aFUwJQKZr5dA4cSd41KlL33nwkmnp73wrsMEQpxLlif1_6iQNbenq4-nSXe1NvD3aqbALFOTKWKbbKtgoNv3kL7K5-_6ZwC0eXSKKyQtdtuoPtDTBtNFXzlc5n6YwVoxraFMUuH_rFZWEqHMEzY9UZfuzLisU8"/>
+</button>
+<!-- Capture Button -->
+<button class="w-20 h-20 rounded-full border-4 border-white/50 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform group">
+<div class="w-16 h-16 bg-white rounded-full flex items-center justify-center group-active:bg-surface-dim transition-colors shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+<span class="material-symbols-outlined text-primary text-3xl">photo_camera</span>
+</div>
+</button>
+<!-- Camera Switch -->
+<button class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-white shadow-md hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">flip_camera_ios</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/90 dark:bg-inverse-surface/90 backdrop-blur-lg rounded-t-xl shadow-[0_-4px_20px_rgba(0,51,102,0.05)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest active:scale-90 transition-all duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-xl" data-icon="explore">explore</span>
+<span class="font-label-md text-[10px]">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-container text-on-secondary-container dark:text-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1 text-xl" data-icon="photo_camera" data-weight="fill">photo_camera</span>
+<span class="font-label-md text-[10px] font-bold">Scan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest active:scale-90 transition-all duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-xl" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-md text-[10px]">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest active:scale-90 transition-all duration-200 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-xl" data-icon="person">person</span>
+<span class="font-label-md text-[10px]">Profile</span>
+</a>
+</nav>
+</body></html>
