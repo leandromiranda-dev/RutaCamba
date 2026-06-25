@@ -33,12 +33,12 @@ export default function Login() {
       nav(res.role === "admin" ? "/admin" : "/tour", { replace: true });
     } catch (e) {
       if (e instanceof ApiError && e.status === 403) {
-        const d = e.detail as { top1_identity?: string } | string;
-        const nearest =
-          typeof d === "object" && d?.top1_identity
-            ? ` El rostro más parecido en el sistema es "${d.top1_identity}".`
-            : "";
-        setDenied(`Acceso denegado: el rostro no coincide con "${name}".${nearest}`);
+        // Por seguridad NO revelamos a qué identidad se parece el rostro:
+        // delataría qué nombre declarar para usurpar una identidad.
+        setDenied(
+          `Acceso denegado: el rostro no coincide con "${name}". ` +
+            `Verificá tu nombre e intentá de nuevo con buena iluminación.`
+        );
       } else {
         setDenied(
           e instanceof ApiError ? e.message : "No se pudo conectar con el servidor."

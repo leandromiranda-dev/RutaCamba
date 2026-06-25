@@ -40,6 +40,7 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: 5173,
+    port: 5174, // 5173 lo usa otro proyecto local; fijamos 5174 acá para no pasar flags por CLI
+    strictPort: true,
   },
 });

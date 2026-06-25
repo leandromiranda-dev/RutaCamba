@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Camera, Languages, BookOpen, MessageCircle, RotateCcw } from "lucide-react";
+import { Camera, Languages, MessageCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +21,15 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   { icon: Camera, label: "Lugar" },
   { icon: Languages, label: "Idioma" },
-  { icon: BookOpen, label: "Info" },
-  { icon: MessageCircle, label: "Chat" },
+  { icon: MessageCircle, label: "Guía" },
 ];
+
+// Confianza mínima del clasificador para dar por reconocido el lugar. El modelo
+// es de conjunto cerrado (8 clases) y SIEMPRE elige una, incluso ante una foto
+// que no es ningún lugar (p. ej. un rostro). Por eso, por debajo de este umbral
+// asumimos que no es ninguno de los lugares conocidos y pedimos otra foto.
+// Ajustá según los resultados reales (ver la confianza que muestra el aviso).
+const MIN_CONFIDENCE = 0.7;
 
 export default function Tour() {
   const { notify } = useToast();
@@ -34,6 +40,8 @@ export default function Tour() {
   const [pred, setPred] = React.useState<PredictResponse | null>(null);
   const [language, setLanguage] = React.useState("es");
   const [info, setInfo] = React.useState<PlaceInfoResponse | null>(null);
+  const [notRecognized, setNotRecognized] = React.useState(false);
+  const [rejectedConf, setRejectedConf] = React.useState<number | null>(null);
 
   const token = getSession()?.token ?? "";
 
@@ -42,13 +50,23 @@ export default function Tour() {
     setShot(null);
     setPred(null);
     setInfo(null);
+    setNotRecognized(false);
+    setRejectedConf(null);
     setLanguage("es");
   };
 
   const runPredict = async (blob: Blob) => {
     setLoading(true);
+    setNotRecognized(false);
     try {
       const res = await predict(token, blob, 3);
+      // Si el clasificador no está suficientemente seguro, no es ninguno de los
+      // lugares conocidos → pedimos otra foto en vez de mostrar algo incorrecto.
+      if (res.confidence < MIN_CONFIDENCE) {
+        setRejectedConf(res.confidence);
+        setNotRecognized(true);
+        return;
+      }
       setPred(res);
       setStep(1);
     } catch (e) {
@@ -61,7 +79,8 @@ export default function Tour() {
     }
   };
 
-  const loadInfo = async () => {
+  // Carga la info del lugar en el idioma elegido y abre la guía (chat).
+  const openGuide = async () => {
     if (!pred) return;
     setLoading(true);
     try {
@@ -78,8 +97,6 @@ export default function Tour() {
     }
   };
 
-  const chatAvailable = info?.chat_available ?? pred?.chat_available ?? false;
-
   return (
     <div className="mx-auto w-full max-w-md space-y-5">
       {/* Stepper */}
@@ -89,8 +106,6 @@ export default function Tour() {
           const active = i === step;
           const done = i < step;
           const reachable = i <= step;
-          const visible = i < 3 || chatAvailable;
-          if (!visible) return null;
           return (
             <button
               key={s.label}
@@ -108,12 +123,7 @@ export default function Tour() {
               >
                 <Icon className="h-4 w-4" />
               </div>
-              <span
-                className={cn(
-                  "text-xs",
-                  active ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
+              <span className={cn("text-xs", active ? "text-foreground" : "text-muted-foreground")}>
                 {s.label}
               </span>
             </button>
@@ -131,7 +141,26 @@ export default function Tour() {
             </p>
             {shot ? (
               <>
-                <CapturePreview url={shot.url} onRetake={() => setShot(null)} />
+                <CapturePreview
+                  url={shot.url}
+                  onRetake={() => {
+                    setShot(null);
+                    setNotRecognized(false);
+                    setRejectedConf(null);
+                  }}
+                />
+                {notRecognized && (
+                  <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm">
+                    No se tiene información de este lugar: no coincide con ninguno
+                    de los lugares conocidos. Probá con otra foto, enfocando bien
+                    el lugar y con buena iluminación.
+                    {rejectedConf !== null && (
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        (confianza detectada: {Math.round(rejectedConf * 100)}%)
+                      </span>
+                    )}
+                  </div>
+                )}
                 <Button
                   className="w-full"
                   size="lg"
@@ -139,7 +168,7 @@ export default function Tour() {
                   onClick={() => runPredict(shot.blob)}
                 >
                   {loading ? <Spinner /> : <Camera className="h-5 w-5" />}
-                  Identificar lugar
+                  {notRecognized ? "Reintentar" : "Identificar lugar"}
                 </Button>
               </>
             ) : (
@@ -162,9 +191,7 @@ export default function Tour() {
                 <h2 className="text-lg font-bold">
                   {pred.translations?.es?.nombre ?? pred.landmark_id}
                 </h2>
-                <Badge variant="success">
-                  {Math.round(pred.confidence * 100)}%
-                </Badge>
+                <Badge variant="success">{Math.round(pred.confidence * 100)}%</Badge>
               </div>
               <div className="flex flex-wrap gap-1">
                 {pred.top_k.map(([id, p]) => (
@@ -176,9 +203,7 @@ export default function Tour() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
-                Elegí un idioma
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">Elegí un idioma</p>
               <LanguageSelect
                 value={language}
                 onChange={setLanguage}
@@ -186,56 +211,24 @@ export default function Tour() {
               />
             </div>
 
-            <Button
-              className="w-full"
-              size="lg"
-              disabled={loading}
-              onClick={loadInfo}
-            >
-              {loading ? <Spinner /> : <BookOpen className="h-5 w-5" />}
-              Ver información
+            <Button className="w-full" size="lg" disabled={loading} onClick={openGuide}>
+              {loading ? <Spinner /> : <MessageCircle className="h-5 w-5" />}
+              Abrir guía
             </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Paso 2: info del lugar */}
+      {/* Paso 2: guía conversacional (descripción + chat, con cambio de idioma) */}
       {step === 2 && info && (
-        <Card className="animate-fade-in">
-          <CardContent className="space-y-4 pt-5">
-            <h2 className="text-xl font-bold">{info.name}</h2>
-            <p className="leading-relaxed text-foreground/90">
-              {info.description}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">{info.language.toUpperCase()}</Badge>
-              {info.source === "llm" && <Badge>generado por IA</Badge>}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
-                <Languages className="h-5 w-5" /> Otro idioma
-              </Button>
-              {chatAvailable && (
-                <Button className="flex-1" onClick={() => setStep(3)}>
-                  <MessageCircle className="h-5 w-5" /> Conversar
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Paso 3: chat opcional */}
-      {step === 3 && info && chatAvailable && (
         <div className="animate-fade-in space-y-3">
           <ChatPanel
             landmarkId={info.landmark_id}
-            language={language}
             placeName={info.name}
+            language={info.language}
+            initialDescription={info.description}
+            llmAvailable={info.chat_available}
           />
-          <Button variant="outline" className="w-full" onClick={() => setStep(2)}>
-            Volver a la información
-          </Button>
         </div>
       )}
 

@@ -120,7 +120,11 @@ app = FastAPI(title="RutaCamba API", version="2.0.0", lifespan=lifespan)
 # El frontend (Vite) corre en otro origen (p. ej. localhost:5173). Se permite vía
 # variable de entorno CORS_ORIGINS (lista separada por comas). Default: orígenes
 # típicos de desarrollo de Vite.
-_default_origins = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
+_default_origins = (
+    "http://localhost:5173,http://127.0.0.1:5173,"
+    "http://localhost:5174,http://127.0.0.1:5174,"
+    "http://localhost:3000"
+)
 _origins = [o.strip() for o in os.getenv("CORS_ORIGINS", _default_origins).split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
@@ -197,13 +201,16 @@ async def verify(
     result = verify_identity(declared_id, image)
 
     if not result["access"]:
+        # Seguridad: NO devolvemos a qué identidad se parece (top1_identity).
+        # Revelarlo permitiría a un no registrado usurpar ese nombre. La distancia
+        # del top-1 se loguea del lado del servidor para diagnóstico, no se expone.
+        logger.info(
+            f"Acceso denegado: declared_id='{declared_id}' "
+            f"top1='{result['top1_identity']}' dist={result['distance']}"
+        )
         raise HTTPException(
             status_code=403,
-            detail={
-                "access": False,
-                "top1_identity": result["top1_identity"],
-                "distance": result["distance"],
-            },
+            detail={"access": False},
         )
 
     role = get_role(declared_id)
