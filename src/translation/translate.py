@@ -30,46 +30,314 @@ _LANGDETECT_TO_NLLB = {
     "ar": "arb_Arab",
 }
 
+# Traducciones estáticas embebidas — fallback garantizado sin red ni archivos.
+# Nivel 3 de la cadena: LLM en vivo → JSON pre-generado → este dict.
+_STATIC_TRANSLATIONS: dict = {
+    "Cambodromo": {
+        "es": {
+            "nombre": "Cambódromo de Santa Cruz de la Sierra",
+            "descripcion": (
+                "Recinto construido para los desfiles de comparsas del Carnaval Cruceño, "
+                "uno de los carnavales más importantes de Bolivia. Espacio público amplio "
+                "usado también para otros eventos masivos fuera de la temporada de carnaval."
+            ),
+        },
+        "en": {
+            "nombre": "Cambódromo of Santa Cruz de la Sierra",
+            "descripcion": (
+                "A venue built for the carnival troupe parades of the Santa Cruz Carnival, "
+                "one of Bolivia's most important carnivals. A large public space also used "
+                "for other major city events outside carnival season."
+            ),
+        },
+        "fr": {
+            "nombre": "Cambódromo de Santa Cruz de la Sierra",
+            "descripcion": (
+                "Enceinte construite pour les défilés de troupes du Carnaval de Santa Cruz, "
+                "l'un des carnavals les plus importants de Bolivie. Grand espace public "
+                "utilisé aussi pour d'autres événements majeurs hors saison."
+            ),
+        },
+        "it": {
+            "nombre": "Cambódromo di Santa Cruz de la Sierra",
+            "descripcion": (
+                "Struttura costruita per le sfilate di comparsas del Carnevale di Santa Cruz, "
+                "uno dei carnevali più importanti della Bolivia. Ampio spazio pubblico "
+                "utilizzato anche per altri grandi eventi cittadini fuori stagione."
+            ),
+        },
+    },
+    "CatedralMunicipal": {
+        "es": {
+            "nombre": "Catedral Basílica Menor San Lorenzo",
+            "descripcion": (
+                "Templo católico ubicado en la Plaza 24 de Septiembre, corazón histórico "
+                "de Santa Cruz de la Sierra. Es la catedral más importante del departamento "
+                "y uno de los edificios coloniales más representativos de la ciudad."
+            ),
+        },
+        "en": {
+            "nombre": "Cathedral Basilica of San Lorenzo",
+            "descripcion": (
+                "A Catholic church on Plaza 24 de Septiembre, the historic heart of "
+                "Santa Cruz de la Sierra. The most important cathedral in the department "
+                "and one of the city's most representative colonial buildings."
+            ),
+        },
+        "fr": {
+            "nombre": "Cathédrale Basilique de San Lorenzo",
+            "descripcion": (
+                "Temple catholique situé sur la Plaza 24 de Septiembre, cœur historique "
+                "de Santa Cruz de la Sierra. La cathédrale la plus importante du département "
+                "et l'un des édifices coloniaux les plus représentatifs de la ville."
+            ),
+        },
+        "it": {
+            "nombre": "Cattedrale Basilica di San Lorenzo",
+            "descripcion": (
+                "Tempio cattolico situato in Plaza 24 de Septiembre, cuore storico di "
+                "Santa Cruz de la Sierra. La cattedrale più importante del dipartimento "
+                "e uno degli edifici coloniali più rappresentativi della città."
+            ),
+        },
+    },
+    "Cristo": {
+        "es": {
+            "nombre": "Cristo Redentor de Santa Cruz",
+            "descripcion": (
+                "Estatua monumental del Cristo Redentor en Santa Cruz de la Sierra, Bolivia. "
+                "Uno de los íconos más reconocidos de la ciudad, en un punto elevado con "
+                "vistas panorámicas sobre la urbe y sus alrededores."
+            ),
+        },
+        "en": {
+            "nombre": "Christ the Redeemer of Santa Cruz",
+            "descripcion": (
+                "Monumental statue of Christ the Redeemer in Santa Cruz de la Sierra, Bolivia. "
+                "One of the city's most recognized icons, situated at an elevated point "
+                "with panoramic views over the city and surroundings."
+            ),
+        },
+        "fr": {
+            "nombre": "Christ Rédempteur de Santa Cruz",
+            "descripcion": (
+                "Statue monumentale du Christ Rédempteur à Santa Cruz de la Sierra, Bolivie. "
+                "L'un des symboles les plus reconnus de la ville, perché en hauteur "
+                "avec des vues panoramiques sur la cité et ses environs."
+            ),
+        },
+        "it": {
+            "nombre": "Cristo Redentore di Santa Cruz",
+            "descripcion": (
+                "Statua monumentale del Cristo Redentore a Santa Cruz de la Sierra, Bolivia. "
+                "Uno dei simboli più riconoscibili della città, in un punto elevato "
+                "con viste panoramiche sulla metropoli e dintorni."
+            ),
+        },
+    },
+    "DunasArena": {
+        "es": {
+            "nombre": "Lomas de Arena",
+            "descripcion": (
+                "Parque regional con dunas de arena y lagunas estacionales al sur de "
+                "Santa Cruz de la Sierra. Ecosistema único de Bolivia donde el desierto "
+                "y la laguna conviven. Ideal para sandboarding y fotografía de naturaleza."
+            ),
+        },
+        "en": {
+            "nombre": "Lomas de Arena (Sand Dunes)",
+            "descripcion": (
+                "Regional park with sand dunes and seasonal lagoons south of "
+                "Santa Cruz de la Sierra. A unique Bolivian ecosystem where desert and "
+                "lagoon coexist. Ideal for sandboarding and nature photography."
+            ),
+        },
+        "fr": {
+            "nombre": "Lomas de Arena (Dunes de Sable)",
+            "descripcion": (
+                "Parc régional avec des dunes de sable et des lagons saisonniers au sud "
+                "de Santa Cruz de la Sierra. Écosystème unique en Bolivie, idéal pour "
+                "le sandboard et la photographie de nature."
+            ),
+        },
+        "it": {
+            "nombre": "Lomas de Arena (Dune di Sabbia)",
+            "descripcion": (
+                "Parco regionale con dune di sabbia e lagune stagionali a sud di "
+                "Santa Cruz de la Sierra. Ecosistema unico della Bolivia, ideale per "
+                "il sandboarding e la fotografia naturalistica."
+            ),
+        },
+    },
+    "ParqueUrbano": {
+        "es": {
+            "nombre": "Parque Urbano",
+            "descripcion": (
+                "Parque recreativo de gran extensión dentro de Santa Cruz de la Sierra, "
+                "con áreas verdes, senderos y espacios de esparcimiento. Punto de encuentro "
+                "popular para actividades al aire libre."
+            ),
+        },
+        "en": {
+            "nombre": "Parque Urbano (Urban Park)",
+            "descripcion": (
+                "Large recreational park within Santa Cruz de la Sierra, with green areas, "
+                "trails and recreation spaces. A popular meeting point for outdoor activities "
+                "among the city's residents."
+            ),
+        },
+        "fr": {
+            "nombre": "Parque Urbano (Parc Urbain)",
+            "descripcion": (
+                "Grand parc récréatif au cœur de Santa Cruz de la Sierra, avec espaces "
+                "verts, sentiers et aires de loisirs. Lieu de rencontre populaire pour "
+                "les activités de plein air."
+            ),
+        },
+        "it": {
+            "nombre": "Parque Urbano (Parco Urbano)",
+            "descripcion": (
+                "Ampio parco ricreativo nella città di Santa Cruz de la Sierra, con aree "
+                "verdi, sentieri e spazi ricreativi. Punto di incontro popolare per "
+                "le attività all'aperto."
+            ),
+        },
+    },
+    "Plaza24": {
+        "es": {
+            "nombre": "Plaza 24 de Septiembre",
+            "descripcion": (
+                "Plaza principal y centro histórico de Santa Cruz de la Sierra. Rodeada "
+                "de edificios coloniales, la Catedral y sedes de gobierno, es el punto "
+                "de encuentro social más tradicional de la ciudad."
+            ),
+        },
+        "en": {
+            "nombre": "Plaza 24 de Septiembre",
+            "descripcion": (
+                "Main square and historic center of Santa Cruz de la Sierra. Surrounded "
+                "by colonial buildings, the Cathedral and government offices, it is the "
+                "city's most traditional social gathering point."
+            ),
+        },
+        "fr": {
+            "nombre": "Plaza 24 de Septiembre",
+            "descripcion": (
+                "Place principale et centre historique de Santa Cruz de la Sierra. Entourée "
+                "d'édifices coloniaux, de la Cathédrale et des sièges gouvernementaux, "
+                "c'est le point de rencontre social le plus traditionnel de la ville."
+            ),
+        },
+        "it": {
+            "nombre": "Plaza 24 de Septiembre",
+            "descripcion": (
+                "Piazza principale e centro storico di Santa Cruz de la Sierra. Circondata "
+                "da edifici coloniali, la Cattedrale e sedi governative, è il punto di "
+                "incontro sociale più tradizionale della città."
+            ),
+        },
+    },
+    "Tahuichi": {
+        "es": {
+            "nombre": "Estadio Ramón Tahuichi Aguilera",
+            "descripcion": (
+                "Estadio de fútbol principal de Santa Cruz de la Sierra, sede de partidos "
+                "profesionales y asociado a la célebre academia de fútbol formativo Tahuichi."
+            ),
+        },
+        "en": {
+            "nombre": "Ramón Tahuichi Aguilera Stadium",
+            "descripcion": (
+                "Main football stadium of Santa Cruz de la Sierra, home to professional "
+                "matches and associated with the famous Tahuichi youth football academy."
+            ),
+        },
+        "fr": {
+            "nombre": "Stade Ramón Tahuichi Aguilera",
+            "descripcion": (
+                "Principal stade de football de Santa Cruz de la Sierra, accueillant des "
+                "matchs professionnels et associé à la célèbre académie de football "
+                "jeunesse Tahuichi."
+            ),
+        },
+        "it": {
+            "nombre": "Stadio Ramón Tahuichi Aguilera",
+            "descripcion": (
+                "Principale stadio di calcio di Santa Cruz de la Sierra, sede di partite "
+                "professionistiche e associato alla famosa accademia di calcio giovanile "
+                "Tahuichi."
+            ),
+        },
+    },
+    "Ventura": {
+        "es": {
+            "nombre": "Ventura Mall",
+            "descripcion": (
+                "Centro comercial moderno de Santa Cruz de la Sierra, con tiendas, "
+                "restaurantes y espacios de entretenimiento. Uno de los destinos de "
+                "compras y ocio más visitados de la ciudad."
+            ),
+        },
+        "en": {
+            "nombre": "Ventura Mall",
+            "descripcion": (
+                "Modern shopping center in Santa Cruz de la Sierra, with shops, restaurants "
+                "and entertainment spaces. One of the most visited shopping and leisure "
+                "destinations in the city."
+            ),
+        },
+        "fr": {
+            "nombre": "Ventura Mall",
+            "descripcion": (
+                "Centre commercial moderne de Santa Cruz de la Sierra, avec boutiques, "
+                "restaurants et espaces de divertissement. L'une des destinations shopping "
+                "et loisirs les plus fréquentées de la ville."
+            ),
+        },
+        "it": {
+            "nombre": "Ventura Mall",
+            "descripcion": (
+                "Centro commerciale moderno di Santa Cruz de la Sierra, con negozi, "
+                "ristoranti e spazi di intrattenimento. Una delle destinazioni shopping "
+                "e svago più visitate della città."
+            ),
+        },
+    },
+}
+
 
 class TranslationService:
-    """Servicio de traducción con lookup O(1) y normalización de entrada.
+    """Servicio de traducción con fallback de 3 niveles.
 
-    Arquitectura de tres capas:
-        1. Lookup O(1) desde JSON pre-generado → sin latencia, sin red.
-        2. Normalización de entrada: LLM (Claude) para entender intención.
-        3. Fallback local: NLLB-200 (carga lazy en CPU) si el LLM no está disponible.
+    Cadena de fallback en get_landmark_translations():
+        1. Claude API en vivo — si ANTHROPIC_API_KEY está configurada.
+        2. data/translations.json — si el archivo existe (pre-generado offline).
+        3. _STATIC_TRANSLATIONS — siempre disponible, embebido en el código.
 
-    El sistema NUNCA debe caerse por fallo del LLM (✍️ Decisión 006 — NLLB-200).
+    El sistema NUNCA debe caerse por fallo del LLM (Decisión 006 — NLLB-200).
     """
 
     def __init__(self, translations_path: str = "data/translations.json"):
-        """Inicializa el servicio cargando el JSON de traducciones en memoria.
+        """Inicializa el servicio. El JSON es opcional — usa datos estáticos si no existe.
 
         Args:
-            translations_path: ruta al JSON generado por generate_translations.py.
-
-        Raises:
-            FileNotFoundError: si el JSON no existe aún.
+            translations_path: ruta al JSON pre-generado (opcional).
         """
-        # ── Cargar traducciones pre-generadas ─────────────────────────────────
-        # DECISIÓN (✍️ Decisión 004): cargamos OFFLINE para lookup O(1) en runtime.
-        # Alternativa descartada: llamar al LLM en cada /predict → latencia ~2s
-        # por request y costo acumulado. Con 8 landmarks fijos, 32 traducciones
-        # pre-generadas son suficientes y la latencia es irrelevante.
-        if not os.path.exists(translations_path):
-            raise FileNotFoundError(
-                f"No se encontró {translations_path}.\n"
-                "Ejecutá primero:\n"
-                "    python scripts/generate_translations.py --api-key <clave>"
+        self._translations: dict = {}
+        if os.path.exists(translations_path):
+            with open(translations_path, "r", encoding="utf-8") as f:
+                self._translations = json.load(f)
+            logger.info(
+                f"TranslationService: {len(self._translations)} landmarks "
+                f"desde {translations_path}"
             )
-        with open(translations_path, "r", encoding="utf-8") as f:
-            self._translations: dict = json.load(f)
-        logger.info(
-            f"TranslationService: {len(self._translations)} landmarks cargados "
-            f"desde {translations_path}"
-        )
+        else:
+            logger.warning(
+                f"No se encontró {translations_path}. "
+                "Usando datos estáticos como fallback. "
+                "Para generar el JSON: python scripts/generate_translations.py"
+            )
 
-        # ── Intentar inicializar cliente Anthropic ────────────────────────────
         self._anthropic_client = None
         try:
             import anthropic  # noqa: F401
@@ -80,23 +348,22 @@ class TranslationService:
             else:
                 logger.warning(
                     "ANTHROPIC_API_KEY no configurada. "
-                    "normalize_input usará directamente NLLB-200 como fallback."
+                    "Se usará JSON o datos estáticos para las traducciones."
                 )
         except ImportError:
-            logger.warning(
-                "anthropic no está instalado. "
-                "Instala con: pip install anthropic"
-            )
+            logger.warning("anthropic no instalado. pip install anthropic")
 
-        # ── NLLB-200: carga lazy (solo cuando el LLM falla) ──────────────────
         self._nllb_pipeline = None
 
-    # ── Contrato 1: Traducción de salida (Criterio 1 — 2 pts) ────────────────
+    # ── Contrato 1: Traducción de salida ─────────────────────────────────────
 
     def get_landmark_translations(self, landmark_id: str) -> dict:
-        """Devuelve las traducciones del landmark en los 4 idiomas soportados.
+        """Devuelve info del landmark en 4 idiomas (ES/EN/FR/IT).
 
-        Lookup O(1) desde el JSON en memoria — sin llamadas a red.
+        Cadena de fallback:
+            1. Claude API en vivo — si ANTHROPIC_API_KEY está configurada.
+            2. data/translations.json — si existe y contiene el landmark.
+            3. _STATIC_TRANSLATIONS — siempre disponible para los 8 landmarks.
 
         Args:
             landmark_id: ID del landmark (uno de config.LANDMARK_CLASSES).
@@ -109,47 +376,52 @@ class TranslationService:
                 "it": {"nombre": str, "descripcion": str},
             }
         """
+        # Nivel 1: LLM en vivo
+        if self._anthropic_client is not None:
+            result = self._get_info_from_llm(landmark_id)
+            if result is not None:
+                return result
+
+        # Nivel 2: JSON pre-generado
         if landmark_id in self._translations:
             return self._translations[landmark_id]
 
-        # Fallback si el ID no está en el JSON (no debería pasar en producción)
-        logger.warning(f"landmark_id '{landmark_id}' no encontrado en translations.json")
-        fallback_msg = {
-            lang: {"nombre": landmark_id, "descripcion": "Descripción no disponible."}
+        # Nivel 3: datos estáticos embebidos
+        static = _STATIC_TRANSLATIONS.get(landmark_id)
+        if static:
+            logger.info(f"Usando datos estáticos para '{landmark_id}'.")
+            return static
+
+        logger.warning(f"landmark_id '{landmark_id}' desconocido.")
+        return {
+            lang: {"nombre": landmark_id, "descripcion": "Información no disponible."}
             for lang in ("es", "en", "fr", "it")
         }
-        return fallback_msg
 
-    # ── Contrato 2: Normalización de entrada (Criterio 2 — 2 pts) ───────────
+    # ── Contrato 2: Normalización de entrada ─────────────────────────────────
 
     def normalize_input(self, query: str) -> dict:
         """Normaliza una consulta en idioma inesperado al español.
 
         Pipeline:
-            1. Detecta idioma con langdetect (local, no falla sin red).
+            1. Detecta idioma con langdetect (local).
             2. Si ya es español → passthrough.
             3. Si no → intenta con Claude LLM (entiende intención turística).
             4. Si el LLM falla → cae a NLLB-200 (local, sin internet).
-
-        DECISIÓN (✍️ Decisión 005): se usa LLM y no traductor literal porque
-        el LLM entiende la INTENCIÓN. Ejemplo: "Where is the big Jesus statue?"
-        → "Cristo Redentor". Un traductor literal solo haría word-for-word.
 
         Args:
             query: consulta del usuario en cualquier idioma.
 
         Returns:
             {
-                "original"     : str,  # consulta original
-                "detected_lang": str,  # código ISO 639-1 detectado
-                "normalized"   : str,  # consulta normalizada en español
+                "original"     : str,
+                "detected_lang": str,
+                "normalized"   : str,
                 "method"       : str,  # "passthrough" | "llm" | "nllb" | "error"
             }
         """
-        # ── Paso 1: Detectar idioma ───────────────────────────────────────────
         detected_lang = self._detect_language(query)
 
-        # ── Paso 2: Si ya es español, passthrough ────────────────────────────
         if detected_lang == "es":
             return {
                 "original": query,
@@ -158,21 +430,78 @@ class TranslationService:
                 "method": "passthrough",
             }
 
-        # ── Paso 3: Intentar con LLM ─────────────────────────────────────────
         if self._anthropic_client is not None:
             result = self._normalize_with_llm(query, detected_lang)
             if result is not None:
                 return result
 
-        # ── Paso 4: Fallback NLLB-200 ────────────────────────────────────────
         return self._normalize_with_nllb(query, detected_lang)
 
     # ── Métodos internos ──────────────────────────────────────────────────────
 
+    def _get_info_from_llm(self, landmark_id: str) -> Optional[dict]:
+        """Genera info del landmark en ES/EN/FR/IT con Claude API. Devuelve None si falla."""
+        if self._anthropic_client is None:
+            return None
+
+        display_name = (
+            _STATIC_TRANSLATIONS.get(landmark_id, {})
+            .get("es", {})
+            .get("nombre", landmark_id)
+        )
+
+        prompt = (
+            "Eres un asistente de turismo para Santa Cruz de la Sierra, Bolivia. "
+            f"El modelo de visión identificó este lugar: {display_name}.\n\n"
+            "Generá información turística atractiva en 4 idiomas. "
+            "Respondé SOLO con JSON válido con esta estructura exacta:\n"
+            '{\n'
+            '  "es": {"nombre": "...", "descripcion": "..."},\n'
+            '  "en": {"nombre": "...", "descripcion": "..."},\n'
+            '  "fr": {"nombre": "...", "descripcion": "..."},\n'
+            '  "it": {"nombre": "...", "descripcion": "..."}\n'
+            '}\n\n'
+            "Cada descripción: máximo 80 palabras. Sé preciso y atractivo para turistas."
+        )
+
+        try:
+            response = self._anthropic_client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=600,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            raw = response.content[0].text.strip()
+
+            # Limpiar bloques de código markdown si los hay
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            raw = raw.strip().rstrip("```").strip()
+
+            result = json.loads(raw)
+
+            if all(
+                lang in result
+                and isinstance(result[lang], dict)
+                and "nombre" in result[lang]
+                and "descripcion" in result[lang]
+                for lang in ("es", "en", "fr", "it")
+            ):
+                logger.info(f"LLM generó info para '{landmark_id}'.")
+                return result
+
+            logger.warning(f"LLM devolvió estructura inválida para '{landmark_id}'.")
+            return None
+
+        except Exception as e:
+            logger.warning(f"LLM falló para '{landmark_id}', usando fallback: {e}")
+            return None
+
     def _detect_language(self, text: str) -> str:
         """Detecta el idioma con langdetect (local, sin red)."""
         try:
-            from langdetect import detect, LangDetectException
+            from langdetect import detect
             return detect(text)
         except Exception as e:
             logger.warning(f"langdetect falló: {e}. Asumiendo idioma desconocido.")
@@ -192,7 +521,7 @@ class TranslationService:
         )
         try:
             response = self._anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=128,
                 messages=[{"role": "user", "content": prompt}],
             )
@@ -211,13 +540,9 @@ class TranslationService:
     def _normalize_with_nllb(self, query: str, detected_lang: str) -> dict:
         """Fallback local con NLLB-200 cuando el LLM no está disponible.
 
-        DECISIÓN (✍️ Decisión 006): NLLB-200 sobre MarianMT porque:
-        - NLLB cubre 200 idiomas con un único modelo (MarianMT requiere un
-          modelo separado por par de idiomas → ≥600 MB por par).
-        - NLLB corre en CPU sin internet, cumple el requisito de fallback offline.
-        - Google Translate no es offline → no aplica como fallback de emergencia.
+        DECISIÓN (Decisión 006): NLLB-200 sobre MarianMT porque cubre 200 idiomas
+        con un único modelo y corre en CPU sin internet.
         """
-        # Carga lazy: solo se instancia si realmente se necesita
         if self._nllb_pipeline is None:
             try:
                 from transformers import pipeline as hf_pipeline
@@ -225,7 +550,7 @@ class TranslationService:
                 self._nllb_pipeline = hf_pipeline(
                     "translation",
                     model="facebook/nllb-200-distilled-600M",
-                    device=-1,  # CPU siempre (sin CUDA requerido)
+                    device=-1,
                 )
                 logger.info("NLLB-200 listo.")
             except Exception as e:
