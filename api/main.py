@@ -35,6 +35,7 @@ from PIL import Image
 from src.config import TOKEN_TTL
 from src.landmarks.predictor import LandmarkPredictor
 from src.reid.access import verify_identity
+from src.reid.hf_gallery_sync import pull_gallery, push_gallery
 from src.reid.roles import get_role, set_role
 from src.translation.translate import TranslationService
 
@@ -101,6 +102,7 @@ async def lifespan(app: FastAPI):
     _predictor = LandmarkPredictor()
     _translator = TranslationService()
     if not REID_MOCK:
+        pull_gallery()
         _ensure_gallery_cache()
     # Pre-carga los modelos de Re-ID para que el primer /verify no sea lento
     try:
@@ -338,6 +340,7 @@ async def enroll(
     save_gallery(gallery, cache_path)
     reload_gallery()
     set_role(name, role)
+    push_gallery()
 
     return {"ok": True, "identity": name, "embeddings_added": len(embeddings)}
 
