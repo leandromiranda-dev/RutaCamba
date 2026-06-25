@@ -55,11 +55,53 @@ _translator: Optional[TranslationService] = None
 _sessions: dict[str, dict] = {}
 
 
+def _ensure_gallery_cache() -> None:
+    """Puente entre la galería del equipo y el formato que usa access.py.
+
+    El motor biométrico (data/gallery/registrar.py) persiste
+    ``embeddings_autorizados.pt`` como ``{nombre: embedding}`` (un embedding por
+    persona, vía torch.save). En cambio access.py/gallery.py esperan
+    ``gallery_cache.pkl`` con ``{identidad: [embedding, ...]}``.
+
+    Si el pickle no existe pero sí el .pt, se convierte una sola vez al arrancar.
+    Idempotente y defensivo: cualquier fallo se loguea sin tumbar el servidor.
+    """
+    from src.config import GALLERY_DIR
+    from src.reid.gallery import save_gallery
+
+    pkl_path = os.path.join(GALLERY_DIR, "gallery_cache.pkl")
+    pt_path = os.path.join(GALLERY_DIR, "embeddings_autorizados.pt")
+
+    if os.path.exists(pkl_path) or not os.path.exists(pt_path):
+        return  # ya hay cache, o no hay nada que convertir
+
+    try:
+        import numpy as np
+        import torch
+
+        raw = torch.load(pt_path, map_location="cpu", weights_only=False)
+        gallery: dict = {}
+        for name, emb in raw.items():
+            if hasattr(emb, "numpy"):
+                emb = emb.detach().cpu().numpy()
+            gallery[str(name)] = [np.asarray(emb).reshape(-1)]
+        if gallery:
+            save_gallery(gallery, pkl_path)
+            logger.info(
+                f"Galería convertida desde {pt_path}: "
+                f"{len(gallery)} identidad(es) → {pkl_path}"
+            )
+    except Exception as e:
+        logger.warning(f"No se pudo convertir {pt_path} a {pkl_path}: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _predictor, _translator
     _predictor = LandmarkPredictor()
     _translator = TranslationService()
+    if not REID_MOCK:
+        _ensure_gallery_cache()
     # Pre-carga los modelos de Re-ID para que el primer /verify no sea lento
     try:
         from src.reid.embeddings import _load_models

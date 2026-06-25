@@ -42,10 +42,17 @@ Variables de entorno (`.env`):
   (`data/translations.json` / `_STATIC_TRANSLATIONS`) y el chat se oculta solo.
 - `CORS_ORIGINS` — orígenes permitidos del frontend (coma-separados). Default:
   `http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000`.
-- `REID_MOCK=1` — **modo desarrollo**: simula el Re-ID y el enrolamiento para
-  probar el frontend de punta a punta sin la galería ArcFace real. Identidades
-  válidas en mock: `jose` (admin), `maria`, `demo`. Sin esta variable se usa la
-  galería real (`src/reid/embeddings.py` — parte de Leandro).
+- `REID_MOCK=1` — **opcional, solo desarrollo**: simula el Re-ID y el enrolamiento
+  para probar el frontend sin cámara/galería. Identidades mock: `jose` (admin),
+  `maria`, `demo`. **Por defecto (sin esta variable) se usa el Re-ID real**
+  (facenet_pytorch: MTCNN + InceptionResnetV1 / VGGFace2, 512-d).
+
+**Galería de rostros (Re-ID real):** `src/reid/access.py` lee
+`data/gallery/gallery_cache.pkl` (`{identidad: [embedding, ...]}`). Al arrancar, la
+API genera ese cache automáticamente desde `data/gallery/embeddings_autorizados.pt`
+(la base del motor biométrico) si aún no existe. Nuevas personas se agregan en
+caliente vía `/enroll` (admin). Para regenerar todo desde imágenes:
+`build_gallery()` + `save_gallery()` en `src/reid/`.
 
 ### Endpoints
 
@@ -72,6 +79,25 @@ npm run build               # build estático en web/dist/ (incluye PWA)
 Requiere **HTTPS** en producción (obligatorio para cámara y PWA). Se sirve desde
 cualquier hosting estático (Vercel, Netlify, Cloudflare Pages) o como estáticos
 del propio FastAPI. Opcionalmente se empaqueta para tiendas con Capacitor.
+
+## Despliegue
+
+**Backend** (Render / Railway / Fly.io / VM) — hay un `Dockerfile` listo:
+
+```bash
+docker build -t rutacamba-api .
+docker run -p 8000:8000 --env-file .env rutacamba-api
+```
+
+Configurar `OPENROUTER_API_KEY`, `CORS_ORIGINS` (origen del frontend) y montar un
+volumen en `data/gallery/` + `data/roles.json` para que el enrolamiento sobreviva
+reinicios. La imagen respeta `$PORT`.
+
+**Frontend** (Vercel / Netlify / Cloudflare Pages): build con `cd web && npm run build`,
+publicar `web/dist/`. El routing SPA ya está resuelto: `web/vercel.json` (rewrites)
+y `web/public/_redirects` (Netlify/CF) redirigen todo a `index.html` para que
+`/tour` y `/admin` no den 404 al refrescar. Definir `VITE_API_URL` con la URL
+pública del backend antes de buildear.
 
 ## WandB
 
