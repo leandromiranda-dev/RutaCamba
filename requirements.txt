@@ -21,6 +21,6 @@ sentencepiece
 fastapi
 uvicorn[standard]
 python-multipart
-gradio
+gradio        # solo para la UI legacy (ui/legacy_gradio_app.py); la UI actual es web/ (React/PWA)
 requests
 python-dotenv
