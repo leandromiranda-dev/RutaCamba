@@ -3,7 +3,14 @@ services:
     name: rutacamba-api
     runtime: python
     plan: starter
-    buildCommand: pip install -r requirements-api.txt wandb && python scripts/download_model_wandb.py
+    buildCommand: >-
+      pip install -r requirements-api.txt wandb &&
+      python scripts/download_model_wandb.py &&
+      mkdir -p /data/gallery &&
+      cp -n data/gallery/gallery_cache.pkl /data/gallery/gallery_cache.pkl 2>/dev/null || true &&
+      cp -n data/gallery/embeddings_autorizados.pt /data/gallery/embeddings_autorizados.pt 2>/dev/null || true &&
+      cp -n data/translations.json /data/translations.json 2>/dev/null || true &&
+      cp -n data/roles.json /data/roles.json 2>/dev/null || true
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: OPENROUTER_API_KEY
