@@ -1,738 +1,676 @@
-"""ui/app.py — Interfaz Gradio de RutaCamba (Nicole, Fase 6).
-
-Diseño basado en Lumina Velocity (desing/):
-  - Tab 1 ← inicio_y_autenticaci_n_facial
-  - Tab 2 ← esc_ner_del_entorno + an_lisis_y_resultados
-
-La UI consume la API con requests y NUNCA carga modelos directamente.
-"""
+"""ui/app.py — RutaCamba — Validación facial → Chat turístico WhatsApp-azul."""
+import base64
 import os
+import re
+from datetime import datetime
 
 import gradio as gr
 import requests
 
 API_URL = os.environ.get("API_URL", "http://localhost:8000")
 
-# ── Head: Tailwind CDN + config exacto de desing/ + Material Symbols + Fonts ──
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _img_b64(path: str) -> str:
+    with open(path, "rb") as f:
+        data = base64.b64encode(f.read()).decode()
+    ext = path.rsplit(".", 1)[-1].lower()
+    mime = {"jpg": "jpeg", "jpeg": "jpeg", "png": "png", "webp": "webp"}.get(ext, "jpeg")
+    return f"data:image/{mime};base64,{data}"
+
+
+def _md(text: str) -> str:
+    text = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"_(.*?)_", r"<em>\1</em>", text)
+    text = text.replace("\n\n", "<br><br>").replace("\n", "<br>")
+    return text
+
+
+# ── Chat renderer ──────────────────────────────────────────────────────────────
+
+def render_chat(history: list) -> str:
+    if not history:
+        return (
+            '<div style="display:flex;flex-direction:column;align-items:center;'
+            'justify-content:center;padding:60px 24px;background:#E8EFFF;height:100%;">'
+            '<div style="font-size:60px;margin-bottom:16px;opacity:.35;">💬</div>'
+            '<p style="font-family:DM Sans,sans-serif;font-size:15px;color:#8A99BB;'
+            'text-align:center;margin:0;line-height:1.6;">'
+            'Tu conversación aparecerá aquí</p></div>'
+        )
+
+    _AVATAR = (
+        '<div style="width:30px;height:30px;border-radius:50%;flex-shrink:0;'
+        'background:linear-gradient(135deg,#1565C0 0%,#42A5F5 100%);'
+        'display:flex;align-items:center;justify-content:center;'
+        'font-size:15px;align-self:flex-end;">🤖</div>'
+    )
+
+    ts = datetime.now().strftime("%H:%M")
+    parts: list[str] = [
+        f'<div style="text-align:center;margin:14px 0;">'
+        f'<span style="font-family:DM Sans,sans-serif;font-size:11px;color:#90A4C0;'
+        f'background:#D8E4F8;padding:4px 14px;border-radius:20px;">Hoy {ts}</span>'
+        f'</div>'
+    ]
+
+    for msg in history:
+        if msg["role"] == "ai":
+            parts.append(
+                '<div style="display:flex;align-items:flex-end;gap:8px;'
+                'margin-bottom:8px;margin-right:15%;">'
+                + _AVATAR
+                + '<div style="background:#FFFFFF;border-radius:18px 18px 18px 4px;'
+                'padding:11px 15px;box-shadow:0 1px 3px rgba(21,101,192,.1);'
+                'font-family:DM Sans,sans-serif;font-size:14px;color:#1A2340;'
+                f'line-height:1.6;">{_md(msg.get("text",""))}</div></div>'
+            )
+        else:
+            inner = ""
+            if msg.get("image"):
+                try:
+                    src = _img_b64(msg["image"])
+                    inner += (
+                        f'<img src="{src}" alt="foto adjunta" '
+                        'style="max-width:220px;max-height:220px;object-fit:cover;'
+                        'border-radius:12px;display:block;margin-bottom:6px;">'
+                    )
+                except Exception:
+                    inner += '<em style="opacity:.75">[imagen adjunta]</em><br>'
+            if msg.get("text"):
+                inner += msg["text"]
+            parts.append(
+                '<div style="display:flex;justify-content:flex-end;'
+                'margin-bottom:8px;margin-left:15%;">'
+                '<div style="background:#1565C0;border-radius:18px 18px 4px 18px;'
+                'padding:11px 15px;font-family:DM Sans,sans-serif;font-size:14px;'
+                f'color:#FFFFFF;line-height:1.6;">{inner}</div></div>'
+            )
+
+    # Auto-scroll to bottom of the messages container
+    parts.append(
+        '<script>'
+        'setTimeout(function(){'
+        'var d=document.getElementById("chat-display");'
+        'if(d){d.scrollTop=d.scrollHeight;}'
+        '},60);'
+        '</script>'
+    )
+
+    return (
+        '<div id="rc-msgs" style="padding:8px 14px 20px;background:#E8EFFF;">'
+        + "".join(parts)
+        + '</div>'
+    )
+
+
+# ── API wrappers ───────────────────────────────────────────────────────────────
+
+def _call_verify(name: str, selfie_path: str) -> requests.Response:
+    with open(selfie_path, "rb") as f:
+        return requests.post(
+            f"{API_URL}/verify",
+            data={"declared_id": name.strip()},
+            files={"selfie": f},
+            timeout=30,
+        )
+
+
+def _call_predict(token: str, img_path: str, k: int = 3) -> requests.Response:
+    with open(img_path, "rb") as f:
+        return requests.post(
+            f"{API_URL}/predict",
+            data={"token": token, "k": k},
+            files={"image": f},
+            timeout=30,
+        )
+
+
+# ── Event handlers ─────────────────────────────────────────────────────────────
+
+def verify_fn(name: str, selfie_path: str):
+    def _err(msg):
+        return msg, "", gr.update(), gr.update(), render_chat([]), []
+
+    if not name.strip():
+        return _err("⚠️ Escribí tu nombre primero.")
+    if selfie_path is None:
+        return _err("⚠️ Adjuntá una foto de tu cara o usá la cámara.")
+
+    try:
+        resp = _call_verify(name, selfie_path)
+    except requests.ConnectionError:
+        return _err("🔴 Sin conexión a la API. ¿Está corriendo el servidor?")
+
+    if resp.status_code == 200:
+        token = resp.json()["token"]
+        greeting = (
+            f"¡Hola, **{name.strip()}**! 👋 Soy tu guía turístico de **RutaCamba**.\n\n"
+            "Mandame una foto de cualquier lugar de **Santa Cruz de la Sierra** "
+            "y te cuento todo sobre él. 📸\n\n"
+            "Usá el botón 📎 para adjuntar una imagen."
+        )
+        history = [{"role": "ai", "text": greeting, "image": None}]
+        return (
+            "",
+            token,
+            gr.update(visible=False),
+            gr.update(visible=True),
+            render_chat(history),
+            history,
+        )
+
+    detail = resp.json().get("detail", {})
+    top1 = detail.get("top1_identity", "desconocido") if isinstance(detail, dict) else str(detail)
+    return _err(f"❌ No verificado — el rostro más parecido es **{top1}**. Intentá con otra foto.")
+
+
+def toggle_attach(img_vis: bool):
+    return gr.update(visible=not img_vis), not img_vis
+
+
+def send_fn(token: str, text: str, img_path, history: list, img_vis: bool):
+    if not token:
+        return render_chat(history), history, "", None, img_vis
+
+    has_img = img_path is not None
+    has_txt = bool(text.strip())
+    if not has_img and not has_txt:
+        return render_chat(history), history, "", None, img_vis
+
+    user_msg = {
+        "role": "user",
+        "text": text.strip() if has_txt else "",
+        "image": img_path,
+    }
+    history = history + [user_msg]
+
+    if has_img:
+        try:
+            resp = _call_predict(token, img_path)
+        except requests.ConnectionError:
+            ai_msg = {"role": "ai", "text": "🔴 Sin conexión a la API.", "image": None}
+            return render_chat(history + [ai_msg]), history + [ai_msg], "", None, False
+
+        if resp.status_code == 200:
+            data = resp.json()
+            top_k = data["top_k"]
+            trans = data["translations"]
+            es = trans.get("es", {})
+            en = trans.get("en", {})
+            nombre = es.get("nombre", data["landmark_id"].replace("_", " ").title())
+            nombre_en = en.get("nombre", "")
+            desc = es.get("descripcion", "")
+            conf = int(float(top_k[0][1]) * 100) if top_k else 0
+            otros = [
+                f"• {n.replace('_',' ').title()} ({int(float(s)*100)}%)"
+                for n, s in top_k[1:3]
+            ]
+            ai_text = (
+                f"📍 **{nombre}**"
+                + (f"\n_{nombre_en}_" if nombre_en else "")
+                + f"\n\nConfianza: **{conf}%**\n\n{desc}"
+                + ("\n\n**Otras posibilidades:**\n" + "\n".join(otros) if otros else "")
+            )
+        elif resp.status_code == 401:
+            ai_text = "⚠️ Sesión expirada. Recargá la página para verificarte de nuevo."
+        else:
+            ai_text = f"🔴 Error: {resp.json().get('detail', 'Error desconocido.')}"
+
+        ai_msg = {"role": "ai", "text": ai_text, "image": None}
+        new_hist = history + [ai_msg]
+        return (
+            render_chat(new_hist), new_hist, "",
+            gr.update(value=None, visible=False), False,
+        )
+
+    # Mensaje de texto solo
+    ai_msg = {
+        "role": "ai",
+        "text": "Para identificar un lugar adjuntá una foto 📷\nUsá el botón **📎** para subir una imagen.",
+        "image": None,
+    }
+    new_hist = history + [ai_msg]
+    return render_chat(new_hist), new_hist, "", gr.update(), img_vis
+
+
+# ── HTML ───────────────────────────────────────────────────────────────────────
 
 _HEAD = """
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet"/>
-<script id="tw-config">
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "surface":                   "#f7f9fb",
-        "surface-dim":               "#d8dadc",
-        "surface-container-lowest":  "#ffffff",
-        "surface-container-low":     "#f2f4f6",
-        "surface-container":         "#eceef0",
-        "surface-container-high":    "#e6e8ea",
-        "surface-container-highest": "#e0e3e5",
-        "surface-tint":              "#3a5f94",
-        "on-surface":                "#191c1e",
-        "on-surface-variant":        "#43474f",
-        "outline":                   "#737780",
-        "outline-variant":           "#c3c6d1",
-        "primary":                   "#001e40",
-        "on-primary":                "#ffffff",
-        "primary-container":         "#003366",
-        "on-primary-container":      "#799dd6",
-        "primary-fixed-dim":         "#a7c8ff",
-        "secondary":                 "#00696e",
-        "on-secondary":              "#ffffff",
-        "secondary-container":       "#00f4fe",
-        "on-secondary-container":    "#006c71",
-        "secondary-fixed-dim":       "#00dce5",
-        "background":                "#f7f9fb",
-        "on-background":             "#191c1e",
-        "error":                     "#ba1a1a",
-        "on-error":                  "#ffffff",
-        "error-container":           "#ffdad6",
-      },
-      borderRadius: {
-        "DEFAULT": "0.25rem",
-        "lg":   "0.5rem",
-        "xl":   "0.75rem",
-        "full": "9999px"
-      },
-      spacing: {
-        "margin-mobile":  "16px",
-        "base":           "8px",
-        "margin-desktop": "40px",
-        "gutter":         "24px",
-      },
-      fontFamily: {
-        "body-md":            ["Inter"],
-        "caption":            ["Inter"],
-        "headline-md":        ["Montserrat"],
-        "label-md":           ["Inter"],
-        "display-lg":         ["Montserrat"],
-        "body-lg":            ["Inter"],
-        "headline-lg":        ["Montserrat"],
-        "headline-lg-mobile": ["Montserrat"],
-      },
-      fontSize: {
-        "body-md":            ["16px", { lineHeight: "24px", fontWeight: "400" }],
-        "caption":            ["12px", { lineHeight: "16px", fontWeight: "400" }],
-        "headline-md":        ["24px", { lineHeight: "32px", fontWeight: "600" }],
-        "label-md":           ["14px", { lineHeight: "20px", fontWeight: "600" }],
-        "display-lg":         ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
-        "body-lg":            ["18px", { lineHeight: "28px", fontWeight: "400" }],
-        "headline-lg":        ["32px", { lineHeight: "40px", fontWeight: "600" }],
-        "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "600" }],
-      }
-    }
-  }
-}
-</script>
-<style>
-  /* Glass overlay (desing/ glass-overlay) */
-  .glass-overlay {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 0.5px solid rgba(255, 255, 255, 0.3);
-  }
-  /* Gradient text (desing/ ai-gradient-text) */
-  .ai-gradient-text {
-    background: linear-gradient(135deg, #001e40 0%, #00696e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  /* Scan line — sweep once, pause, repeat (no distracting infinite loop) */
-  .scan-line {
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(to right, transparent, #00dce5, transparent);
-    position: absolute;
-    animation: scan 5s ease-in-out infinite;
-    will-change: top, opacity;
-  }
-  @keyframes scan {
-    0%   { top: 10%; opacity: 0; }
-    8%   { opacity: 0.8; }
-    42%  { top: 90%; opacity: 0.8; }
-    50%  { top: 90%; opacity: 0; }
-    100% { top: 90%; opacity: 0; }
-  }
-  /* Pulse ring — slower, subtler */
-  .pulse-ring {
-    position: absolute;
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    border: 1.5px solid #00dce5;
-    animation: pulse-anim 3.5s ease-out infinite;
-    opacity: 0;
-  }
-  @keyframes pulse-anim {
-    0%   { transform: scale(0.95); opacity: 0.4; }
-    60%  { transform: scale(1.4);  opacity: 0; }
-    100% { transform: scale(1.4);  opacity: 0; }
-  }
-  /* Scanner frame corners (desing/ esc_ner_del_entorno) */
-  .scanner-frame { position: relative; }
-  .scanner-frame::before, .scanner-frame::after,
-  .scanner-frame > div::before, .scanner-frame > div::after {
-    content: '';
-    position: absolute;
-    width: 30px; height: 30px;
-    border-color: #00dce5;
-    border-style: solid;
-  }
-  .scanner-frame::before     { top: 0;    left: 0;  border-width: 3px 0 0 3px; }
-  .scanner-frame::after      { top: 0;    right: 0; border-width: 3px 3px 0 0; }
-  .scanner-frame > div::before { bottom: 0; left: 0;  border-width: 0 0 3px 3px; }
-  .scanner-frame > div::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
-  /* Scanline camera — sweep+pause pattern, WCAG motion-friendly */
-  @keyframes scanline {
-    0%   { transform: translateY(0);    opacity: 0; }
-    8%   { opacity: 0.75; }
-    42%  { transform: translateY(250px); opacity: 0.75; }
-    50%  { transform: translateY(250px); opacity: 0; }
-    100% { transform: translateY(250px); opacity: 0; }
-  }
-  .scan-line-cam {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(to right, transparent, #00dce5, transparent);
-    box-shadow: 0 0 6px rgba(0,220,229,.5);
-    animation: scanline 5s ease-in-out infinite;
-    will-change: transform, opacity;
-  }
-  /* Accessibility: stop all decorative motion */
-  @media (prefers-reduced-motion: reduce) {
-    .scan-line, .scan-line-cam, .pulse-ring {
-      animation: none !important;
-      display: none !important;
-    }
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-  /* Material Symbols */
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
-  .material-symbols-outlined[data-weight="fill"] {
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet"/>
 """
 
-# ── CSS overrides Gradio para integrar con el sistema de diseño ────────────────
+_AUTH_HERO = """
+<div style="
+  background: linear-gradient(155deg, #0D47A1 0%, #1565C0 50%, #0A3D8F 100%);
+  padding: 44px 24px 52px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+">
+  <div style="position:absolute;top:-50px;right:-50px;width:180px;height:180px;
+              border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-70px;left:-35px;width:220px;height:220px;
+              border-radius:50%;background:rgba(66,165,245,.09);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;">
+    <div style="width:68px;height:68px;border-radius:50%;
+                background:rgba(255,255,255,.18);backdrop-filter:blur(6px);
+                margin:0 auto 18px;display:flex;align-items:center;
+                justify-content:center;font-size:32px;
+                box-shadow:0 4px 20px rgba(0,0,0,.2);">🗺️</div>
+    <h1 style="font-family:Montserrat,sans-serif;font-size:30px;font-weight:800;
+               color:#fff;margin:0 0 10px;letter-spacing:-.02em;">RutaCamba</h1>
+    <p style="font-family:DM Sans,sans-serif;font-size:15px;
+              color:rgba(255,255,255,.78);margin:0 auto;max-width:290px;line-height:1.6;">
+      Tu guía turístico inteligente para Santa Cruz de la Sierra
+    </p>
+  </div>
+</div>
+"""
+
+_AUTH_INSTRUCTIONS = """
+<div style="max-width:440px;margin:0 auto;padding:28px 24px 0;text-align:center;">
+  <div style="display:inline-flex;align-items:center;gap:8px;background:#DDEAFF;
+              border-radius:20px;padding:6px 16px;margin-bottom:18px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#1565C0;
+                 display:inline-block;"></span>
+    <span style="font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;
+                 color:#1565C0;">Paso 1 — Verificación</span>
+  </div>
+  <h2 style="font-family:Montserrat,sans-serif;font-size:21px;font-weight:800;
+             color:#0D1A33;margin:0 0 10px;">Verificá tu identidad</h2>
+  <p style="font-family:DM Sans,sans-serif;font-size:14px;color:#5A6A8A;
+            margin:0 auto;max-width:320px;line-height:1.65;">
+    Subí una foto de tu cara <strong>o abrí la cámara</strong>.
+    Si la verificación pasa, entrás al chat turístico.
+  </p>
+</div>
+"""
+
+_AUTH_SPACER = '<div style="height:10px;"></div>'
+
+_AUTH_BOTTOM_SPACER = '<div style="height:32px;"></div>'
+
+_CHAT_HEADER = """
+<div style="
+  background: #1565C0;
+  padding: 0 16px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+">
+  <div style="width:42px;height:42px;border-radius:50%;
+              background:rgba(255,255,255,.18);
+              display:flex;align-items:center;justify-content:center;font-size:21px;">🤖</div>
+  <div>
+    <div style="font-family:DM Sans,sans-serif;font-size:16px;font-weight:700;
+                color:#fff;line-height:1.2;">RutaCamba AI</div>
+    <div style="font-family:DM Sans,sans-serif;font-size:12px;
+                color:rgba(255,255,255,.72);">en línea</div>
+  </div>
+</div>
+"""
+
+# ── CSS ────────────────────────────────────────────────────────────────────────
 
 _CSS = """
-/* Base */
-footer.svelte-1ax1toq, footer { display: none !important; }
+/* ── Reset global ── */
+footer, footer.svelte-1ax1toq { display: none !important; }
 .gradio-container {
   max-width: 100% !important;
   padding: 0 !important;
-  background: #f7f9fb !important;
-  font-family: 'Inter', sans-serif !important;
+  margin: 0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  background: transparent !important;
 }
 
-/* Tabs (desing/ nav style) */
-.tabs > .tab-nav {
-  border-bottom: 1px solid #c3c6d1 !important;
-  background: white !important;
-  padding: 0 40px !important;
+/* ── AUTH SCREEN ── */
+#auth-screen {
+  min-height: 100vh;
+  background: #F0F5FF;
+}
+#auth-screen > *, #auth-screen > * > * {
+  padding: 0 !important;
   gap: 0 !important;
 }
-.tabs > .tab-nav > button {
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  color: #43474f !important;
-  padding: 12px 22px !important;
-  border-radius: 0 !important;
-  border: none !important;
-  border-bottom: 2px solid transparent !important;
-  background: transparent !important;
-  transition: color 200ms ease, border-color 200ms ease, background 200ms ease !important;
-  cursor: pointer !important;
+
+/* Selfie upload */
+#selfie-upload {
+  max-width: 440px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
 }
-.tabs > .tab-nav > button:hover:not(.selected) {
-  color: #001e40 !important;
-  background: rgba(0,105,110,.04) !important;
+#selfie-upload .upload-container {
+  border: 2px dashed #1565C0 !important;
+  border-radius: 16px !important;
+  background: #F4F8FF !important;
+  min-height: 170px !important;
+  transition: border-color .2s, background .2s !important;
 }
-.tabs > .tab-nav > button.selected {
-  color: #00696e !important;
-  border-bottom-color: #00696e !important;
+#selfie-upload .upload-container:hover {
+  border-color: #0D47A1 !important;
+  background: #EAF0FF !important;
 }
 
-/* Keyboard focus (WCAG AA — 4.5:1 contrast ring) */
-*:focus-visible {
-  outline: 2px solid #00696e !important;
-  outline-offset: 2px !important;
-  border-radius: 4px !important;
+/* Name input */
+#name-inp {
+  max-width: 440px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
 }
-
-/* Cursor consistency */
-button:not(:disabled), [role="button"] { cursor: pointer !important; }
-
-/* Gradio loading state — communicate processing visually */
-.generating #btn-verify button,
-.generating #btn-predict button {
-  opacity: 0.7 !important;
-  cursor: wait !important;
-  pointer-events: none !important;
-}
-
-/* Botón verificar (desing/ primary button) */
-#btn-verify button {
-  background: #001e40 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  box-shadow: 0px 8px 30px rgba(0,51,102,0.2) !important;
-  transition: all .3s !important;
-  padding: 14px 0 !important;
-  overflow: hidden !important;
-}
-#btn-verify button:hover {
-  transform: translateY(-2px) !important;
-  background: linear-gradient(135deg, #001e40, #00696e) !important;
-  box-shadow: 0px 12px 35px rgba(0,105,110,.35) !important;
-}
-
-/* Botón identificar (desing/ CTA gradient) */
-#btn-predict button {
-  background: linear-gradient(135deg, #001e40 0%, #00696e 100%) !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  box-shadow: 0px 8px 30px rgba(0,245,255,0.2) !important;
-  transition: all .3s !important;
-  padding: 14px 0 !important;
-}
-#btn-predict button:hover:not(:disabled) {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 12px 35px rgba(0,105,110,.35) !important;
-}
-#btn-predict button:disabled {
-  background: #c3c6d1 !important;
-  box-shadow: none !important;
-  color: #43474f !important;
-  opacity: 0.6 !important;
-}
-
-/* Input (desing/ input fields) */
-#inp-declared input, #inp-declared textarea {
-  border: 1px solid #c3c6d1 !important;
-  border-radius: 8px !important;
-  font-family: 'Inter', sans-serif !important;
+#name-inp label > span { display: none !important; }
+#name-inp input {
+  border: 1.5px solid #BDD0F0 !important;
+  border-radius: 12px !important;
+  font-family: 'DM Sans', sans-serif !important;
   font-size: 15px !important;
-  background: white !important;
+  padding: 14px 16px !important;
+  background: #fff !important;
+  color: #0D1A33 !important;
   transition: border-color .2s, box-shadow .2s !important;
-  padding: 10px 14px !important;
 }
-#inp-declared input:focus, #inp-declared textarea:focus {
-  border-color: #00696e !important;
-  box-shadow: 0 0 0 3px rgba(0,105,110,.12) !important;
+#name-inp input:focus {
+  border-color: #1565C0 !important;
+  box-shadow: 0 0 0 3px rgba(21,101,192,.14) !important;
   outline: none !important;
 }
 
-/* Slider */
-input[type="range"] { accent-color: #00696e !important; }
-
-/* Image upload areas */
-.upload-container, .image-container {
-  border: 2px dashed #c3c6d1 !important;
+/* Verify button — gr.Button puts elem_id directly on <button> */
+#verify-btn {
+  background: #1565C0 !important;
+  color: #fff !important;
+  border: none !important;
   border-radius: 12px !important;
-  background: #f7f9fb !important;
-  transition: border-color .2s !important;
-}
-.upload-container:hover, .image-container:hover {
-  border-color: #00696e !important;
-}
-
-/* Traducciones (desing/ an_lisis_y_resultados AI summary) */
-#out-translations .prose h2 {
-  font-family: 'Montserrat', sans-serif !important;
-  font-size: 28px !important;
+  font-family: 'DM Sans', sans-serif !important;
   font-weight: 700 !important;
-  background: linear-gradient(135deg, #001e40 0%, #00696e 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  margin-bottom: 4px !important;
+  font-size: 16px !important;
+  padding: 16px 0 !important;
+  width: calc(100% - 48px) !important;
+  max-width: 392px !important;
+  margin: 8px auto 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 18px rgba(21,101,192,.32) !important;
+  transition: background .2s, transform .1s, box-shadow .2s !important;
 }
-#out-translations .prose h3 {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #00696e !important;
-  text-transform: uppercase !important;
-  letter-spacing: .07em !important;
-  margin-top: 16px !important;
+#verify-btn:hover {
+  background: #0D47A1 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(21,101,192,.38) !important;
 }
-#out-translations .prose strong {
-  color: #001e40 !important;
-  font-size: 15px !important;
+#verify-btn:active { transform: none !important; }
+
+/* Verify status */
+#verify-msg {
+  max-width: 440px !important;
+  margin: 0 auto !important;
+  padding: 4px 24px 0 !important;
+  text-align: center !important;
 }
-#out-translations .prose hr { border-color: #e6e8ea !important; }
-#out-translations .prose p {
-  color: #43474f !important;
+#verify-msg .prose p {
+  font-family: 'DM Sans', sans-serif !important;
   font-size: 14px !important;
-  line-height: 1.6 !important;
+  text-align: center !important;
+  margin: 0 !important;
 }
 
-/* Label top-k */
-#out-topk .label-wrap {
-  border: 1px solid #c3c6d1 !important;
-  border-radius: 12px !important;
-  background: white !important;
+/* ══ CHAT SCREEN ══
+   Use position:fixed overlay so height is exactly 100vh,
+   independent of Gradio's outer container padding/margins.
+   Children are positioned absolutely within this fixed frame.
+*/
+#chat-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100 !important;
+  background: #E8EFFF !important;
+  overflow: hidden !important;
+}
+/* Reset Gradio wrapper padding on all children */
+#chat-screen > * {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* ── Chat header: top 62px ── */
+#chat-screen > .block:first-child {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 62px !important;
+  z-index: 10 !important;
+  padding: 0 !important;
+}
+#chat-screen > .block:first-child .wrap { position: relative !important; }
+#chat-screen > .block:first-child .html-container { height: 62px !important; overflow: hidden !important; }
+
+/* ── Messages: fills space between header (62px) and input bar (74px) ── */
+#chat-display {
+  position: absolute !important;
+  top: 62px !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 74px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  background: #E8EFFF !important;
+  padding: 0 !important;
+}
+#chat-display .wrap { position: relative !important; }
+#chat-display .html-container {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow: visible !important;
+  background: #E8EFFF !important;
+}
+
+/* ── Attach image: overlays above input bar when visible ── */
+#chat-attach {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 74px !important;
+  z-index: 8 !important;
+  background: #fff !important;
+  border-top: 1px solid #D0DCF4 !important;
+  padding: 8px 16px !important;
+}
+#chat-attach .wrap { position: relative !important; }
+#chat-attach .upload-container {
+  border: 1.5px dashed #1565C0 !important;
+  border-radius: 10px !important;
+  background: #F4F8FF !important;
+  min-height: 90px !important;
+}
+
+/* ── Input bar: bottom 74px ── */
+#input-bar {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 74px !important;
+  z-index: 10 !important;
+  background: #EEF4FF !important;
+  border-top: 1px solid #D0DCF4 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  padding: 10px 12px !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+#input-bar > * { padding: 0 !important; margin: 0 !important; }
+
+/* Attach button — elem_id is directly on <button> */
+#attach-btn {
+  background: #DDEAFF !important;
+  color: #1565C0 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  font-size: 20px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background .18s !important;
+}
+#attach-btn:hover { background: #C8DAFF !important; }
+
+/* Message textarea */
+#msg-inp { flex: 1 !important; min-width: 0 !important; }
+#msg-inp label { display: none !important; }
+#msg-inp .block, #msg-inp .wrap { padding: 0 !important; }
+#msg-inp textarea {
+  border: 1.5px solid #BDD0F0 !important;
+  border-radius: 22px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 15px !important;
+  padding: 10px 16px !important;
+  background: #fff !important;
+  resize: none !important;
+  line-height: 1.45 !important;
+  overflow-y: auto !important;
+  transition: border-color .2s !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+#msg-inp textarea:focus {
+  border-color: #1565C0 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(21,101,192,.12) !important;
+}
+
+/* Send button — elem_id is directly on <button> */
+#send-btn {
+  background: #1565C0 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  font-size: 20px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 8px rgba(21,101,192,.32) !important;
+  transition: background .18s, transform .1s !important;
+}
+#send-btn:hover {
+  background: #0D47A1 !important;
+  transform: scale(1.06) !important;
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  #selfie-upload, #name-inp, #verify-btn, #verify-msg {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
 }
 """
 
-# ── HTML blocks: adaptados de desing/ ─────────────────────────────────────────
-
-# Header (desing/ TopNavBar pattern)
-_HEADER = """
-<header class="bg-surface/80 backdrop-blur-xl flex justify-between items-center px-margin-desktop w-full sticky top-0 z-50 border-b border-outline-variant/30 shadow-sm py-4">
-  <div class="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2">
-    <span class="material-symbols-outlined text-primary" data-weight="fill">travel_explore</span>
-    RutaCamba
-  </div>
-  <div class="flex items-center gap-2">
-    <span class="inline-flex items-center gap-2 px-3 py-1 bg-[#E0FBFC] text-secondary rounded-full font-label-md text-label-md text-xs">
-      <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
-      Asistente Turístico · Santa Cruz de la Sierra
-    </span>
-  </div>
-</header>
-"""
-
-# Tab 1 — Verificación (adaptado de inicio_y_autenticaci_n_facial)
-_AUTH_HERO = """
-<div class="hidden md:flex flex-col justify-end h-full min-h-[400px] relative overflow-hidden rounded-xl"
-     style="background: linear-gradient(135deg, #001e40 0%, #003366 50%, #00696e 100%);">
-  <div class="absolute inset-0 opacity-10"
-       style="background-image: radial-gradient(circle at 30% 70%, #00dce5 0%, transparent 50%), radial-gradient(circle at 80% 20%, #a7c8ff 0%, transparent 40%);"></div>
-  <div class="glass-overlay rounded-xl p-6 m-4 relative z-10">
-    <h2 class="font-headline-lg text-headline-md font-bold text-white mb-2">RutaCamba</h2>
-    <p class="font-body-md text-body-md text-white/80">
-      Identificación inteligente de landmarks de Santa Cruz de la Sierra.<br>
-      Acceso exclusivo para usuarios verificados.
-    </p>
-    <div class="flex gap-2 mt-4 flex-wrap">
-      <span class="px-3 py-1 bg-white/10 text-white rounded-full font-caption text-caption border border-white/20">CNN Transfer Learning</span>
-      <span class="px-3 py-1 bg-white/10 text-white rounded-full font-caption text-caption border border-white/20">Re-ID Biométrico</span>
-      <span class="px-3 py-1 bg-white/10 text-white rounded-full font-caption text-caption border border-white/20">4 Idiomas</span>
-    </div>
-  </div>
-</div>
-"""
-
-_AUTH_HEADING = """
-<div class="space-y-4 text-center mb-6">
-  <h1 class="font-display-lg text-headline-lg font-bold text-primary tracking-tight">
-    Bienvenido a la <span class="text-secondary">nueva era</span><br>del turismo inteligente
-  </h1>
-  <p class="font-body-lg text-body-md text-on-surface-variant max-w-sm mx-auto">
-    Verificá tu identidad con reconocimiento facial para acceder al asistente.
-  </p>
-</div>
-"""
-
-_FACE_SCANNER = """
-<div class="flex flex-col items-center my-4">
-  <!-- Scanner animado (desing/ inicio_y_autenticaci_n_facial) -->
-  <div class="relative w-36 h-36 group">
-    <!-- Anillo exterior decorativo -->
-    <div class="absolute inset-0 rounded-full border border-outline-variant/50"></div>
-    <div class="absolute inset-2 rounded-full border-2 border-dashed border-primary-fixed-dim/30"
-         style="animation: spin 20s linear infinite;"></div>
-    <!-- Área del scanner -->
-    <div class="absolute inset-4 rounded-full bg-surface-container shadow-inner overflow-hidden
-                flex items-center justify-center border-2 border-transparent transition-colors duration-300
-                hover:border-secondary">
-      <span class="material-symbols-outlined text-6xl text-surface-tint opacity-50" data-weight="fill">face</span>
-      <div class="scan-line"></div>
-    </div>
-    <!-- Pulse ring -->
-    <div class="pulse-ring"></div>
-    <!-- Corner markers -->
-    <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary"></div>
-    <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary"></div>
-    <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary"></div>
-    <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary"></div>
-  </div>
-  <p class="font-caption text-caption text-on-surface-variant mt-2">Sistema Re-ID activo</p>
-</div>
-"""
-
-_VERIFY_SEPARATOR = """
-<div class="flex items-center gap-3 my-4">
-  <div class="flex-1 h-px bg-outline-variant/30"></div>
-  <span class="font-caption text-caption text-outline">o subí tu selfie abajo</span>
-  <div class="flex-1 h-px bg-outline-variant/30"></div>
-</div>
-"""
-
-# Tab 2 — Scanner + Resultados (adaptado de esc_ner_del_entorno + an_lisis_y_resultados)
-_SCAN_HEADER = """
-<div class="mb-4">
-  <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#E0FBFC] text-secondary rounded-full font-label-md text-label-md mb-3 shadow-sm">
-    <span class="material-symbols-outlined text-base">center_focus_strong</span>
-    Escáner de Landmark
-  </div>
-  <p class="font-body-md text-body-md text-on-surface-variant">
-    Subí una foto del lugar que querés identificar. El modelo CNN analizará la imagen.
-  </p>
-</div>
-"""
-
-_RESULTS_PLACEHOLDER = """
-<div id="results-placeholder"
-     class="bg-surface-container-lowest rounded-xl shadow-md border border-surface-container-highest p-6 relative overflow-hidden min-h-48 flex flex-col items-center justify-center gap-3">
-  <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-  <span class="material-symbols-outlined text-5xl text-surface-tint opacity-40">image_search</span>
-  <p class="font-body-md text-body-md text-on-surface-variant text-center">
-    El análisis aparecerá aquí.<br>
-    <span class="font-label-md text-label-md text-secondary">Identificá un lugar para comenzar.</span>
-  </p>
-</div>
-"""
-
-_CONFIDENCE_STATS_TEMPLATE = """
-<div class="grid grid-cols-2 gap-4 mb-4">
-  <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-surface-container-highest">
-    <div class="flex items-center gap-2 mb-2 text-secondary">
-      <span class="material-symbols-outlined text-xl">psychology</span>
-      <span class="font-label-md text-label-md">Confianza IA</span>
-    </div>
-    <div class="font-headline-md text-headline-md text-primary" id="conf-value">—</div>
-  </div>
-  <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-surface-container-highest">
-    <div class="flex items-center gap-2 mb-2 text-surface-tint">
-      <span class="material-symbols-outlined text-xl">location_on</span>
-      <span class="font-label-md text-label-md">Landmark</span>
-    </div>
-    <div class="font-body-md text-body-md text-on-surface font-semibold text-sm" id="landmark-value">—</div>
-  </div>
-</div>
-"""
-
-
-# ── Status HTML (SVG icons, no emoji) ─────────────────────────────────────────
-
-_STATUS_CFG = {
-    "success": ("#f0fdf4", "#15803d", "#bbf7d0",
-                '<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>'),
-    "error":   ("#fef2f2", "#dc2626", "#fecaca",
-                '<path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>'),
-    "warning": ("#fffbeb", "#b45309", "#fde68a",
-                '<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"/>'),
-    "info":    ("#eff6ff", "#2563eb", "#bfdbfe",
-                '<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>'),
-}
-
-
-def _status_html(msg: str, kind: str) -> str:
-    bg, color, border, path = _STATUS_CFG[kind]
-    svg = (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" '
-        f'viewBox="0 0 24 24" stroke="{color}" stroke-width="2">{path}</svg>'
-    )
-    return (
-        f'<div style="background:{bg};border:1px solid {border};border-radius:10px;'
-        f'padding:13px 16px;display:flex;align-items:flex-start;gap:10px;'
-        f'font-family:Inter,sans-serif;font-size:14px;line-height:1.55;margin-top:8px;">'
-        f'<span style="flex-shrink:0;margin-top:1px;">{svg}</span>'
-        f'<span style="color:{color};">{msg}</span></div>'
-    )
-
-
-# ── Funciones que llaman a la API ─────────────────────────────────────────────
-
-def step_verify(declared_id: str, selfie_path: str):
-    """Llama a POST /verify. Devuelve (html_status, token, estado del botón predict)."""
-    if not declared_id.strip():
-        return _status_html("Ingresá tu nombre de identidad.", "warning"), "", gr.update(interactive=False)
-    if selfie_path is None:
-        return _status_html("Subí una selfie.", "warning"), "", gr.update(interactive=False)
-
-    try:
-        with open(selfie_path, "rb") as f:
-            response = requests.post(
-                f"{API_URL}/verify",
-                data={"declared_id": declared_id.strip()},
-                files={"selfie": f},
-                timeout=30,
-            )
-    except requests.ConnectionError:
-        return (
-            _status_html("No se puede conectar a la API. ¿Está corriendo en localhost:8000?", "error"),
-            "",
-            gr.update(interactive=False),
-        )
-
-    if response.status_code == 200:
-        token = response.json()["token"]
-        return (
-            _status_html(
-                f"Acceso concedido — Bienvenido, <strong>{declared_id}</strong>. Pasá al Paso 2.",
-                "success",
-            ),
-            token,
-            gr.update(interactive=True),
-        )
-    else:
-        detail = response.json().get("detail", {})
-        top1 = detail.get("top1_identity", "desconocido") if isinstance(detail, dict) else detail
-        return (
-            _status_html(
-                f"Acceso denegado. Rostro más cercano en galería: <strong>{top1}</strong>.",
-                "error",
-            ),
-            "",
-            gr.update(interactive=False),
-        )
-
-
-_LANG_INFO: dict[str, tuple[str, str]] = {
-    "es": ("🇧🇴", "Español"),
-    "en": ("🇺🇸", "English"),
-    "fr": ("🇫🇷", "Français"),
-    "it": ("🇮🇹", "Italiano"),
-}
-
-
-def _format_translations(landmark_id: str, translations: dict) -> str:
-    """Formatea traducciones como el AI summary card de an_lisis_y_resultados."""
-    title = landmark_id.replace("_", " ").title()
-    parts = [f"## {title}\n"]
-    for lang_code, (flag, lang_label) in _LANG_INFO.items():
-        data = translations.get(lang_code, {})
-        if isinstance(data, dict) and data:
-            nombre = data.get("nombre", "—")
-            descripcion = data.get("descripcion", "—")
-            parts.append(
-                f"### {flag} {lang_label}\n\n"
-                f"**{nombre}**\n\n"
-                f"{descripcion}"
-            )
-        else:
-            parts.append(f"### {flag} {lang_label}\n\n—")
-    return "\n\n---\n\n".join(parts)
-
-
-def step_predict(token: str, image_path: str, k: int):
-    """Llama a POST /predict. Devuelve (dict para gr.Label, markdown de traducciones)."""
-    if not token:
-        return {}, "Primero verificá tu identidad en el Paso 1."
-    if image_path is None:
-        return {}, "Subí una foto del lugar."
-
-    try:
-        with open(image_path, "rb") as f:
-            response = requests.post(
-                f"{API_URL}/predict",
-                data={"token": token, "k": int(k)},
-                files={"image": f},
-                timeout=30,
-            )
-    except requests.ConnectionError:
-        return {}, "No se puede conectar a la API."
-
-    if response.status_code == 200:
-        data = response.json()
-        top_k_dict = {item[0]: float(item[1]) for item in data["top_k"]}
-        info = _format_translations(data["landmark_id"], data["translations"])
-        return top_k_dict, info
-    elif response.status_code == 401:
-        return {}, "Sesión expirada. Volvé a verificar tu identidad."
-    else:
-        detail = response.json().get("detail", "Error desconocido.")
-        return {}, f"Error: {detail}"
-
-
-# ── Interfaz ──────────────────────────────────────────────────────────────────
+# ── Layout ─────────────────────────────────────────────────────────────────────
 
 with gr.Blocks(title="RutaCamba — Asistente Turístico") as demo:
     token_state = gr.State("")
+    chat_hist = gr.State([])
+    img_vis = gr.State(False)
 
-    # ── Header: TopNavBar (desing/) ────────────────────────────────────────────
-    gr.HTML(_HEADER)
+    # ── PANTALLA 1: Verificación facial ────────────────────────────────────────
+    with gr.Column(elem_id="auth-screen") as auth_col:
+        gr.HTML(_AUTH_HERO)
+        gr.HTML(_AUTH_INSTRUCTIONS)
+        gr.HTML(_AUTH_SPACER)
 
-    with gr.Tabs():
+        selfie = gr.Image(
+            sources=["webcam", "upload"],
+            type="filepath",
+            label="Foto de tu cara",
+            show_label=False,
+            elem_id="selfie-upload",
+        )
+        gr.HTML(_AUTH_SPACER)
 
-        # ── Tab 1: Verificación (desing/ inicio_y_autenticaci_n_facial) ───────
-        with gr.Tab("① Verificar identidad"):
-            with gr.Row(equal_height=True):
-                # Panel izquierdo — hero (solo desktop)
-                with gr.Column(scale=1):
-                    gr.HTML(_AUTH_HERO)
+        name_inp = gr.Textbox(
+            placeholder="Tu nombre o usuario (ej: maria_lopez)",
+            show_label=False,
+            elem_id="name-inp",
+        )
+        gr.HTML(_AUTH_SPACER)
 
-                # Panel derecho — formulario de auth
-                with gr.Column(scale=1):
-                    gr.HTML(_AUTH_HEADING)
-                    gr.HTML(_FACE_SCANNER)
-                    gr.HTML(_VERIFY_SEPARATOR)
+        verify_btn = gr.Button("✓  Verificar identidad", elem_id="verify-btn")
+        verify_msg = gr.Markdown(elem_id="verify-msg")
+        gr.HTML(_AUTH_BOTTOM_SPACER)
 
-                    declared_id_box = gr.Textbox(
-                        label="Identidad declarada",
-                        placeholder="ej: maria_lopez",
-                        elem_id="inp-declared",
-                    )
-                    selfie_input = gr.Image(
-                        type="filepath",
-                        label="Selfie",
-                        elem_id="img-selfie",
-                    )
-                    verify_btn = gr.Button(
-                        "Verificar identidad",
-                        variant="primary",
-                        elem_id="btn-verify",
-                    )
-                    verify_status = gr.HTML(elem_id="out-status")
+    # ── PANTALLA 2: Chat WhatsApp-azul ─────────────────────────────────────────
+    with gr.Column(elem_id="chat-screen", visible=False) as chat_col:
+        gr.HTML(_CHAT_HEADER)
 
-        # ── Tab 2: Escáner + Resultados (desing/ esc_ner_del_entorno + an_lisis) ─
-        with gr.Tab("② Identificar lugar"):
-            with gr.Row(equal_height=False):
-                # Columna izquierda — cámara (desing/ esc_ner_del_entorno)
-                with gr.Column(scale=1):
-                    gr.HTML(_SCAN_HEADER)
+        chat_disp = gr.HTML(
+            value=render_chat([]),
+            elem_id="chat-display",
+        )
 
-                    # Scanner frame sobre el upload de imagen
-                    with gr.Group(elem_classes=["scanner-frame"]):
-                        gr.HTML("""<div></div>
-                        <div class="scan-line-cam" style="pointer-events:none;z-index:5;"></div>""")
-                        place_image = gr.Image(
-                            type="filepath",
-                            label="",
-                            elem_id="img-place",
-                        )
+        attach_img = gr.Image(
+            sources=["upload", "webcam"],
+            type="filepath",
+            label="",
+            show_label=False,
+            elem_id="chat-attach",
+            visible=False,
+            height=110,
+        )
 
-                    k_slider = gr.Slider(
-                        minimum=1, maximum=8, value=3, step=1,
-                        label="Resultados top-k",
-                    )
-                    predict_btn = gr.Button(
-                        "Identificar lugar",
-                        variant="primary",
-                        interactive=False,
-                        elem_id="btn-predict",
-                    )
-
-                # Columna derecha — resultados (desing/ an_lisis_y_resultados)
-                with gr.Column(scale=2):
-                    gr.HTML("""
-                    <div class="mb-4">
-                      <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#E0FBFC] text-secondary rounded-full font-label-md text-label-md text-xs mb-3 shadow-sm">
-                        <span class="material-symbols-outlined text-base">verified_user</span>
-                        Análisis de IA
-                      </div>
-                    </div>
-                    """)
-
-                    # Bento stats (desing/ an_lisis_y_resultados pequeñas cards)
-                    label_output = gr.Label(
-                        label="Clasificación CNN (top-k + probabilidades)",
-                        elem_id="out-topk",
-                    )
-
-                    # AI summary card (desing/ an_lisis_y_resultados Resumen Inteligente)
-                    gr.HTML("""
-                    <div class="bg-surface-container-lowest rounded-xl shadow-md border border-surface-container-highest p-1 relative overflow-hidden mt-4">
-                      <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-                      <div class="flex items-center gap-2 px-4 pt-4 pb-2">
-                        <span class="material-symbols-outlined text-secondary" data-weight="fill">auto_awesome</span>
-                        <span class="font-headline-md text-base font-semibold text-primary" style="font-family:Montserrat,sans-serif;">Resumen multilingüe</span>
-                      </div>
-                    </div>
-                    """)
-                    translations_output = gr.Markdown(
-                        elem_id="out-translations",
-                        container=False,
-                    )
+        with gr.Row(elem_id="input-bar"):
+            attach_btn = gr.Button("📎", elem_id="attach-btn", scale=0, min_width=44)
+            msg_inp = gr.Textbox(
+                placeholder="Escribe un mensaje…",
+                show_label=False,
+                elem_id="msg-inp",
+                scale=4,
+                lines=1,
+                max_lines=3,
+            )
+            send_btn = gr.Button("➤", elem_id="send-btn", scale=0, min_width=44)
 
     # ── Eventos ────────────────────────────────────────────────────────────────
     verify_btn.click(
-        fn=step_verify,
-        inputs=[declared_id_box, selfie_input],
-        outputs=[verify_status, token_state, predict_btn],
+        fn=verify_fn,
+        inputs=[name_inp, selfie],
+        outputs=[verify_msg, token_state, auth_col, chat_col, chat_disp, chat_hist],
     )
 
-    predict_btn.click(
-        fn=step_predict,
-        inputs=[token_state, place_image, k_slider],
-        outputs=[label_output, translations_output],
+    attach_btn.click(
+        fn=toggle_attach,
+        inputs=[img_vis],
+        outputs=[attach_img, img_vis],
+    )
+
+    send_btn.click(
+        fn=send_fn,
+        inputs=[token_state, msg_inp, attach_img, chat_hist, img_vis],
+        outputs=[chat_disp, chat_hist, msg_inp, attach_img, img_vis],
+    )
+    msg_inp.submit(
+        fn=send_fn,
+        inputs=[token_state, msg_inp, attach_img, chat_hist, img_vis],
+        outputs=[chat_disp, chat_hist, msg_inp, attach_img, img_vis],
     )
 
 
@@ -744,8 +682,7 @@ if __name__ == "__main__":
         head=_HEAD,
         theme=gr.themes.Base(
             primary_hue=gr.themes.colors.blue,
-            secondary_hue=gr.themes.colors.teal,
             neutral_hue=gr.themes.colors.slate,
-            font=[gr.themes.GoogleFont("Inter"), "sans-serif"],
+            font=[gr.themes.GoogleFont("DM Sans"), "sans-serif"],
         ),
     )
