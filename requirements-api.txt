@@ -23,3 +23,4 @@ uvicorn[standard]
 python-multipart         # uploads (selfie / foto del lugar / enroll)
 python-dotenv
 requests
+huggingface_hub          # persistencia de galería en HF Dataset Hub
