@@ -16,10 +16,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el resto del proyecto (ver .dockerignore para exclusiones).
 COPY . .
 
-ENV PYTHONUNBUFFERED=1 \
-    PORT=8000
+ENV PYTHONUNBUFFERED=1
 
-EXPOSE 8000
+EXPOSE 7860
 
-# Respeta $PORT (Render/Railway lo inyectan). Sin --reload en producción.
-CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+COPY start.sh .
+RUN chmod +x start.sh
+
+# Descarga el modelo desde WandB y arranca uvicorn.
+# PORT es inyectado por HF Spaces (7860) / Render / Railway.
+CMD ["./start.sh"]
